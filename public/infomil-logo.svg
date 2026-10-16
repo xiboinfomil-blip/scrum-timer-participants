@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 100" role="img" aria-labelledby="title">
+  <title id="title">Infomil Mauritius</title>
+  <g fill="none" stroke="#205f9d" stroke-width="8" stroke-linejoin="miter">
+    <path d="M31 29V23L41 14Q47 9 54 15L70 31"/>
+    <path d="M8 51L32 76Q43 87 54 76L70 59"/>
+  </g>
+  <path fill="#ec8b23" d="M40 31h9v13h13v9H49v13h-9V53H27v-9h13z"/>
+  <text x="83" y="64" fill="#205f9d" font-family="Arial, Helvetica, sans-serif" font-size="56" font-weight="700" letter-spacing="-1.5">infomil</text>
+  <text x="152" y="88" fill="#205f9d" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" letter-spacing="5">MAURITIUS</text>
+</svg>

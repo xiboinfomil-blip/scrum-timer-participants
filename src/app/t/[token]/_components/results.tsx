@@ -1,0 +1,26 @@
+'use client';
+import { useState } from 'react';
+import { Paper, TextField } from '@mui/material';
+import { Pagination, Panel } from '@/components/ui';
+import { duration, leaderboard, measured, pageItems, searchText, todayRound, totals } from '@/lib/statistics';
+import type { PortalData } from '@/types/portal';
+export function Results({ kind, data, now }: { kind: 'statistics' | 'summary'; data: PortalData; now: Date }) {
+  const [query, setQuery] = useState(''), [page, setPage] = useState(1);
+  const summary = kind === 'summary', round = todayRound(data.history, now);
+  const stats = totals(summary ? (round ? [round] : []) : data.history, now);
+  const rows = leaderboard(summary ? (round ? [round] : []) : data.history, now);
+  const list = pageItems(rows.filter(p => searchText(p.name).includes(searchText(query))), page);
+  const prefix = summary ? 'summary' : 'statistics';
+  return <Panel title={summary ? 'Le bilan du jour' : 'Le rythme de l’équipe'} eyebrow={summary ? '03 · Lecture seule' : '02 · Lecture seule'}><p className="mb-5 text-sm leading-relaxed text-muted">{summary ? 'Uniquement le daily terminé aujourd’hui à Maurice (UTC+4). Un ancien bilan ne remplace jamais celui du jour.' : 'Les cinq jours calendaires UTC, aujourd’hui inclus. Les scores affichés sont ceux enregistrés lors des dailys, jamais recalculés.'}</p>
+    {summary && !round ? <p className="rounded-xl border border-dashed border-line p-6 text-sm text-muted">Aucun daily terminé aujourd’hui. Le bilan apparaîtra après sa clôture par le scrum master.</p> : <>
+      {summary && round && <p className="mb-4 text-xs text-muted">Terminé le {new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Indian/Mauritius' }).format(new Date(round.completedAt))} · Maurice</p>}
+      <dl className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">{[['Dailys terminés', stats.rounds], ['Prises de parole', stats.turns], ['Temps total', duration(stats.seconds)], ['Score moyen enregistré', stats.average ?? '—']].map(([label, value]) => <Paper component="div" key={label} variant="outlined" className="min-w-0 p-4"><dt className="text-xs text-muted">{label}</dt><dd className="mt-2 text-xl font-bold tabular-nums text-ink">{value}</dd></Paper>)}</dl>
+      <label htmlFor={`${prefix}-search`} className="mb-2 block text-sm font-semibold text-ink">Rechercher dans les résultats</label><TextField id={`${prefix}-search`} fullWidth size="small" type="search" value={query} onChange={e => { setQuery(e.target.value); setPage(1); }} />
+      <ol aria-label={summary ? 'Résultats du jour' : 'Classement sur cinq jours'} className="mt-4 space-y-2">{list.items.map(p => <li key={p.id} className="flex min-w-0 items-center gap-3 rounded-xl border border-line p-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-line font-bold text-ink" aria-label={p.rank === null ? 'Non classé' : `Rang ${p.rank}`}>{p.rank ?? '—'}</span><div className="min-w-0 flex-1"><p className="font-semibold text-ink">{p.name}</p><p className="text-xs text-muted">{p.count} score(s) mesuré(s) · {p.turns} passage(s)</p></div><span className="text-lg font-bold tabular-nums text-ink">{p.average ?? '—'}<span className="block text-right text-[10px] font-normal text-muted">/ 1 000</span></span></li>)}</ol>
+      {!rows.length && <p className="p-5 text-sm text-muted">Aucun résultat sur cette période.</p>}{rows.length > 0 && !list.items.length && <p className="p-5 text-sm text-muted">Aucun résultat pour cette recherche.</p>}
+      <Pagination page={list.page} pages={list.pages} onPage={setPage} label={summary ? 'Résultats du bilan' : 'Classement statistique'} />
+      {summary && round && <details className="mt-5 rounded-xl border border-line p-4 text-ink"><summary className="min-h-11 text-sm font-semibold text-ink">Contexte du bilan et mesures</summary><p className="my-3 text-xs leading-relaxed text-muted">Les humeurs sont un contexte déclaré, jamais une note de performance. Elles ne participent pas au classement. Les intitulés du mood meter sont archivés ; aucune image externe n’est chargée.</p><ul className="max-h-96 space-y-3 overflow-y-auto">{round.people.map(p => <li key={p.id} className="border-t border-line pt-3 text-sm"><p className="font-semibold">{p.name}</p><p>{duration(p.speakingSeconds)} / budget {duration(p.budgetSeconds)} · {measured(p) ? p.speakingSeconds <= p.budgetSeconds ? 'Dans le temps imparti' : 'Temps dépassé' : 'Non mesuré'}</p><p className="text-muted">Humeur : {p.mood ?? 'non renseignée'}{p.meterTitle ? ` · ${p.meterTitle}` : ''}</p></li>)}</ul></details>}
+    </>}
+    <details className="mt-5 rounded-xl border border-line p-4 text-sm text-muted"><summary className="min-h-11 font-semibold text-ink">Comment lire ces chiffres ?</summary><p className="mt-2 leading-relaxed">La moyenne utilise uniquement les scores enregistrés avec au moins une seconde mesurée et un budget strictement positif. La moyenne est arrondie à l’entier, comme dans l’application maître. Les moyennes égales partagent le même rang (1, 1, 3). Un tiret signifie qu’aucun score mesuré n’est disponible. Les humeurs ne sont jamais une évaluation de performance.</p></details>
+  </Panel>;
+}

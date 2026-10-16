@@ -1,0 +1,2 @@
+import { StateScreen } from '@/components/ui';
+export default function NotFound() { return <StateScreen title="Page introuvable"><p>Utilisez le lien d’équipe fourni par votre scrum master.</p></StateScreen>; }

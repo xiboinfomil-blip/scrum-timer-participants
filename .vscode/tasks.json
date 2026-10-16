@@ -1,0 +1,19 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Participants production preview",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"start",
+				"--",
+				"--port",
+				"3002"
+			],
+			"isBackground": true,
+			"problemMatcher": []
+		}
+	]
+}
