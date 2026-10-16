@@ -1,6 +1,7 @@
 import type { SVGProps } from 'react';
 
 const paths = {
+  close: 'M6 6l12 12M6 18L18 6',
   search: 'M21 21l-4.4-4.4M19 10.5a8.5 8.5 0 1 1-17 0 8.5 8.5 0 0 1 17 0',
   arrow: 'M5 12h14M12 5l7 7-7 7',
   clock: 'M12 8v4l3 2M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0',

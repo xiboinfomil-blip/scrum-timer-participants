@@ -9,7 +9,7 @@ import { ActionButton } from './ui';
 import { PortalIcon } from './portal-icon';
 
 type PortalView = 'notes' | 'statistics' | 'summary';
-const NavigationContext = createContext<{ tab: PortalView; setTab: (tab: PortalView) => void } | null>(null);
+const NavigationContext = createContext<{ tab: PortalView; setTab: (tab: PortalView) => void; openGuide: () => void } | null>(null);
 
 export function usePortalNavigation() {
   const context = useContext(NavigationContext);
@@ -30,7 +30,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
   const hasTeam = pathname.startsWith('/t/');
   const isHelp = pathname === '/help';
   const isHome = pathname === '/';
-  return <NavigationContext.Provider value={{ tab, setTab }}>
+  return <NavigationContext.Provider value={{ tab, setTab, openGuide: () => setGuideOpen(true) }}>
     <AppBar component="header" position="relative" color="transparent" elevation={0} className={`border-b border-line bg-white/95 text-ink backdrop-blur-xl ${hasTeam || isHelp || isHome ? 'team-appbar' : ''}`}>
       <a href="#contenu" className="absolute left-3 top-2 z-50 -translate-y-24 rounded-xl bg-brand px-4 py-3 text-xs font-semibold text-white focus:translate-y-0">Aller au contenu</a>
       <div className="mx-auto flex min-h-18 w-full max-w-480 items-center gap-4 px-6 max-[1100px]:gap-2 max-[800px]:flex-wrap max-[800px]:gap-y-1 max-[800px]:px-3 max-[800px]:py-1">

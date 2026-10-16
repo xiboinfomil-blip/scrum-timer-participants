@@ -162,11 +162,11 @@ class MockAPI:
 
 
 def editor(page):
-    return page.locator('section[aria-labelledby="editor-title"]')
+    return page.get_by_role("dialog").filter(has=page.locator("#editor-title"))
 
 
 def notes_panel(page):
-    return page.locator("section").filter(has=page.get_by_role("heading", name="Les idées à ne pas oublier", exact=True))
+    return page.locator("section").filter(has=page.get_by_role("heading", name="Les idées à ne pas oublier", exact=True, include_hidden=True))
 
 
 async def loaded(page):
@@ -194,6 +194,7 @@ async def layout(page):
 async def open_editor(page, name="Élodie Martin"):
     await page.get_by_role("button", name=f"Écrire une note pour {name}", exact=True).click()
     await expect(editor(page).get_by_role("textbox", name=f"Note de {name}", exact=True)).to_be_focused()
+    await expect(editor(page)).to_have_attribute("aria-modal", "true")
 
 
 async def compare_and_accept(page, draft, revision, server_text):
@@ -255,6 +256,10 @@ async def main_flow(page, api):
     await expect(guide_button).to_be_focused()
     await expect(editor(page).get_by_role("textbox")).to_have_value(draft)
     assert not api.puts, "Opening the guide must not save a draft"
+    await editor(page).get_by_role("button", name="Enregistrer la note", exact=True).click()
+    await expect(editor(page).get_by_role("status")).to_have_text("Note enregistrée et partagée avec l’équipe.")
+    assert api.puts == [{"participantId": "person-01", "hint": draft, "day": api.data["day"], "revision": 0}]
+    await editor(page).get_by_role("button", name="Fermer", exact=True).click()
     await page.get_by_role("button", name="Statistiques", exact=True).click()
     await expect(navigation.get_by_role("button", name="Statistiques", exact=True)).to_have_attribute("aria-pressed", "true")
     await expect(navigation.get_by_role("button", name="Notes du jour", exact=True)).to_have_attribute("aria-pressed", "false")
@@ -275,11 +280,9 @@ async def main_flow(page, api):
     await expect(page.get_by_text("Humeur : 1 · Contexte archivé", exact=True).first).to_be_visible()
     await layout(page)
     await page.get_by_role("button", name="Notes du jour", exact=True).click()
+    await open_editor(page)
     await expect(editor(page).get_by_role("textbox")).to_have_value(draft)
-    assert not api.puts, "Tab navigation must not save automatically"
-    await editor(page).get_by_role("button", name="Enregistrer la note", exact=True).click()
-    await expect(editor(page).get_by_role("status")).to_have_text("Note enregistrée et partagée avec l’équipe.")
-    assert api.puts == [{"participantId": "person-01", "hint": draft, "day": api.data["day"], "revision": 0}]
+    assert len(api.puts) == 1, "Tab navigation must not save automatically"
     await page.reload(wait_until="domcontentloaded")
     await loaded(page)
     await open_editor(page)
@@ -290,7 +293,7 @@ async def main_flow(page, api):
     # change. They require compare + acknowledge, not automatic draft replacement.
     api.note("Mise à jour distante, éditeur propre", 2)
     await page.get_by_role("button", name="Actualiser", exact=True).click()
-    await loaded(page)
+    await expect(editor(page).get_by_role("button", name="Recharger pour comparer", exact=True)).to_be_visible()
     await compare_and_accept(page, draft, 2, "Mise à jour distante, éditeur propre")
     assert len(api.puts) == 1, "Acknowledgement is not a save"
 
@@ -313,6 +316,34 @@ async def main_flow(page, api):
     await open_editor(page)
     await expect(editor(page).get_by_role("textbox")).to_have_value(conflict_draft)
     await editor(page).get_by_role("button", name="Fermer", exact=True).click()
+
+
+async def modal_flow(page, api):
+    await page.goto(PORTAL, wait_until="domcontentloaded")
+    await loaded(page)
+    trigger = page.get_by_role("button", name="Écrire une note pour Élodie Martin", exact=True)
+    await open_editor(page)
+    await page.keyboard.press("Escape")
+    await expect(editor(page)).to_have_count(0)
+    await expect(trigger).to_be_focused()
+    await open_editor(page)
+    draft = "Brouillon conservé dans la fenêtre"
+    await editor(page).get_by_role("textbox").fill(draft)
+    page.once("dialog", lambda dialog: dialog.dismiss())
+    await page.keyboard.press("Escape")
+    await expect(editor(page).get_by_role("textbox")).to_have_value(draft)
+    page.once("dialog", lambda dialog: dialog.dismiss())
+    await page.locator(".note-modal .MuiDialog-container").click(position={"x": 2, "y": 2}, force=True)
+    await expect(editor(page).get_by_role("textbox")).to_have_value(draft)
+    await editor(page).get_by_role("textbox").fill("x" * 601)
+    await expect(editor(page).get_by_role("button", name="Enregistrer la note", exact=True)).to_be_disabled()
+    await expect(editor(page).get_by_role("textbox")).to_have_attribute("aria-invalid", "true")
+    await layout(page)
+    page.once("dialog", lambda dialog: dialog.accept())
+    await editor(page).get_by_role("button", name="Fermer", exact=True).click()
+    await expect(editor(page)).to_have_count(0)
+    await expect(trigger).to_be_focused()
+    assert not api.puts, "Dismissal and validation must not save a draft"
 
 
 async def error_flow(page, api, status):
@@ -416,6 +447,8 @@ async def run_case(browser, viewport, motion, case):
             await guide_flow(page, api)
         elif case == "home":
             await home_flow(page, api)
+        elif case == "modal":
+            await modal_flow(page, api)
         elif case == "stale-read":
             await stale_read_flow(page, api)
         else:
@@ -439,7 +472,7 @@ async def main():
         try:
             for viewport in ({"width": 1366, "height": 768}, {"width": 320, "height": 568}):
                 for motion in motions:
-                    for case in ("main", "401", "502", "stale-read", "guide", "home"):
+                    for case in ("main", "401", "502", "stale-read", "guide", "home", "modal"):
                         await run_case(browser, viewport, motion, case)
         finally:
             await browser.close()

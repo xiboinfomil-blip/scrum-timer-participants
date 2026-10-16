@@ -1,7 +1,9 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { Alert, TextField } from '@mui/material';
+import { Alert, Avatar, Dialog, DialogContent, IconButton, TextField } from '@mui/material';
 import { ActionButton } from '@/components/ui';
+import { PortalIcon } from '@/components/portal-icon';
+import { usePortalNavigation } from '@/components/portal-shell';
 import { characterCount, validateNote } from '@/lib/contracts';
 import { mauritiusDay } from '@/lib/statistics';
 import type { NoteInput, Notes, PortalData } from '@/types/portal';
@@ -12,6 +14,7 @@ type Props = {
   onClose: () => void;
 };
 export function NoteEditor({ participant, data, day, saving, save, refresh, onClose }: Props) {
+  const { openGuide } = usePortalNavigation();
   const current = data.hints.find(h => h.participantId === participant.id);
   const [base, setBase] = useState(() => ({ day: data.day, hint: current?.hint ?? '', revision: current?.revision ?? 0 }));
   const [draft, setDraft] = useState(base.hint);
@@ -22,7 +25,6 @@ export function NoteEditor({ participant, data, day, saving, save, refresh, onCl
   const inputRef = useRef<HTMLTextAreaElement>(null);
   useEffect(() => {
     inputRef.current?.focus({ preventScroll: true });
-    inputRef.current?.closest('section')?.scrollIntoView({ block: 'nearest' });
   }, []);
   const dirty = draft !== base.hint;
   const removed = !data.team.roster.some(p => p.id === participant.id);
@@ -60,12 +62,24 @@ export function NoteEditor({ participant, data, day, saving, save, refresh, onCl
     } else setMessage('Rechargement impossible. Votre brouillon est conservé.');
     setReviewing(false);
   }
-  return <section aria-labelledby="editor-title" className="mt-5 rounded-2xl border-2 border-brand bg-white p-4 text-ink sm:p-5"><div className="mb-3 flex flex-wrap items-start justify-between gap-2"><div><p className="text-xs font-semibold text-brand">Note partagée · {base.day}</p><h3 id="editor-title" className="text-lg font-bold">{participant.name}</h3></div><ActionButton disabled={saving || reviewing} onClick={() => { if (!dirty || window.confirm('Abandonner ce brouillon non enregistré ?')) onClose(); }}>Fermer</ActionButton></div>
-    <p id="note-help" className="mb-3 text-sm text-muted">Vous écrivez pour ce participant, sans identité personnelle vérifiée. Toute l’équipe peut modifier cette note jusqu’à minuit à Maurice (UTC+4).</p>
-    <form onSubmit={submit} className="space-y-3"><label htmlFor="note" className="block text-sm font-semibold">Note de {participant.name}</label><TextField inputRef={inputRef} id="note" fullWidth size="small" multiline minRows={5} value={draft} disabled={saving || reviewing} onChange={e => { setDraft(e.target.value.replace(/\r\n?/g, '\n')); setReview(null); }} slotProps={{ htmlInput: { 'aria-describedby': 'note-help note-count' } }} /><p id="note-count" className={`text-xs ${characterCount(draft.trim()) > 600 ? 'text-danger' : 'text-muted'}`}>{characterCount(draft.trim())} / 600 caractères Unicode · texte non vide, retours LF uniquement</p>
+  function requestClose() {
+    if (saving || reviewing) return;
+    if (!dirty || window.confirm('Abandonner ce brouillon non enregistré ?')) onClose();
+  }
+  const count = characterCount(draft.trim());
+  const initials = participant.name.trim().split(/\s+/).slice(0, 2).map(part => Array.from(part)[0]).join('').toLocaleUpperCase('fr');
+  return <Dialog open onClose={requestClose} fullWidth maxWidth="sm" scroll="paper" aria-labelledby="editor-title" aria-describedby="note-help" className="note-modal" slotProps={{ transition: { onEntered: () => inputRef.current?.focus({ preventScroll: true }) }, paper: { component: 'section' } }}>
+    <header className="note-modal-header"><span className="note-modal-symbol"><PortalIcon name="notes" className="size-5" /></span><div className="min-w-0 flex-1"><p className="note-modal-eyebrow">LES IDÉES À NE PAS OUBLIER</p><h2 id="editor-title">{base.revision ? 'Votre note partagée' : 'Une idée à partager'}</h2></div><IconButton aria-label="Fermer" disabled={saving || reviewing} onClick={requestClose} className="note-modal-close"><PortalIcon name="close" className="size-5" /></IconButton></header>
+    <form onSubmit={submit} className="note-modal-form"><DialogContent className="note-modal-content">
+    <div className="note-modal-person"><Avatar variant="rounded">{initials}</Avatar><div className="min-w-0 flex-1"><p>{participant.name}</p><span>Note partagée · {base.day}</span></div><span className="note-modal-shared"><PortalIcon name="people" className="size-3.5" />Équipe</span></div>
+    <p id="note-help" className="note-modal-help">Vous écrivez pour ce participant, sans identité personnelle vérifiée. Toute l’équipe peut modifier cette note jusqu’à minuit à Maurice (UTC+4).</p>
+    <label htmlFor="note" className="note-modal-label">Note de {participant.name}</label><p className="note-modal-prompt">Une avancée, un blocage, une question… allez à l’essentiel.</p><TextField inputRef={inputRef} id="note" fullWidth size="small" multiline minRows={5} maxRows={10} placeholder="Ce que j’aimerais partager avec l’équipe…" value={draft} disabled={saving || reviewing} error={count > 600} onChange={e => { setDraft(e.target.value.replace(/\r\n?/g, '\n')); setReview(null); }} slotProps={{ htmlInput: { 'aria-describedby': 'note-help note-count', 'aria-invalid': count > 600 } }} /><div className="note-modal-count"><span><span className={dirty ? 'draft-dot' : 'saved-dot'} />{dirty ? 'Brouillon non enregistré' : 'Aucune modification en attente'}</span><p id="note-count" className={count > 600 ? 'text-danger' : ''}>{count} / 600 <span className="sr-only">caractères Unicode</span></p></div>
+    <div className="note-modal-feedback">
     {removed && <Alert severity="error" role="alert">Ce participant ne figure plus dans l’équipe. Le brouillon est conservé mais ne peut pas être enregistré.</Alert>}
     {conflict && <div className="space-y-3"><Alert severity="warning" role="alert">La version ou la journée a changé, ou le dernier enregistrement n’est pas confirmé. Votre brouillon n’a pas été remplacé. Rechargez et comparez avant tout nouvel enregistrement.</Alert><ActionButton type="button" disabled={saving || reviewing} onClick={() => void loadReview()}>{reviewing ? 'Rechargement…' : 'Recharger pour comparer'}</ActionButton>
-      {review && <div className="space-y-3"><p className="text-xs font-semibold">Version serveur · {review.day} · révision {review.revision}</p><p className="whitespace-pre-wrap rounded-lg bg-white p-3 text-sm">{review.hint || 'Aucune note enregistrée.'}</p><ActionButton type="button" disabled={review.day !== day || removed} onClick={() => { setBase(review); setUncertain(false); setReview(null); setMessage('Version examinée. Le brouillon est conservé ; vérifiez-le puis enregistrez explicitement.'); }}>Version examinée : conserver mon brouillon</ActionButton><ActionButton type="button" onClick={() => { if (window.confirm('Remplacer votre brouillon par la version du serveur ?')) { setBase(review); setDraft(review.hint); setUncertain(false); setReview(null); setMessage('Version serveur chargée.'); } }}>Remplacer mon brouillon par cette version</ActionButton></div>}
+      {review && <div className="note-modal-review space-y-3"><p className="text-xs font-semibold">Version serveur · {review.day} · révision {review.revision}</p><p className="whitespace-pre-wrap rounded-lg bg-white p-3 text-sm">{review.hint || 'Aucune note enregistrée.'}</p><ActionButton type="button" disabled={review.day !== day || removed} onClick={() => { setBase(review); setUncertain(false); setReview(null); setMessage('Version examinée. Le brouillon est conservé ; vérifiez-le puis enregistrez explicitement.'); }}>Version examinée : conserver mon brouillon</ActionButton><ActionButton type="button" onClick={() => { if (window.confirm('Remplacer votre brouillon par la version du serveur ?')) { setBase(review); setDraft(review.hint); setUncertain(false); setReview(null); setMessage('Version serveur chargée.'); } }}>Remplacer mon brouillon par cette version</ActionButton></div>}
     </div>}
-    <div className="flex flex-wrap items-center gap-3"><ActionButton type="submit" variant="contained" disabled={saving || reviewing || conflict || removed || !dirty || !draft.trim() || characterCount(draft.trim()) > 600}>{saving ? 'Enregistrement…' : 'Enregistrer la note'}</ActionButton><span className="text-xs text-muted">{dirty ? 'Brouillon non enregistré' : 'Aucune modification en attente'}</span></div><p role="status" className="text-sm text-brand">{message}</p></form></section>;
+    <p role="status" className={`note-modal-message ${message && !conflict ? 'is-confirmed' : ''}`}>{message}</p></div>
+    <div className="note-modal-tip"><PortalIcon name="shield" className="size-4 shrink-0" /><p>Partagé avec l’équipe, pas privé. Évitez les informations sensibles ; le brouillon reste uniquement dans cet onglet.</p></div>
+    </DialogContent><footer className="note-modal-footer"><div className="note-modal-tools"><ActionButton aria-label="Guide d’utilisation" onClick={openGuide} startIcon={<PortalIcon name="help" className="size-4" />}>Guide</ActionButton><ActionButton disabled={saving || reviewing} onClick={() => void refresh()} aria-label="Actualiser" startIcon={<PortalIcon name="refresh" className="size-4" />}>Actualiser</ActionButton></div><ActionButton type="submit" variant="contained" startIcon={<PortalIcon name="check" className="size-4" />} disabled={saving || reviewing || conflict || removed || !dirty || !draft.trim() || count > 600}>{saving ? 'Enregistrement…' : 'Enregistrer la note'}</ActionButton></footer></form></Dialog>;
 }
