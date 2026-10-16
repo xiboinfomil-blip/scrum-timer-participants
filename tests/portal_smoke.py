@@ -361,6 +361,23 @@ async def stale_read_flow(page, api):
         gate.set()
 
 
+async def home_flow(page, api):
+    await page.goto(BASE, wait_until="domcontentloaded")
+    await expect(page.get_by_role("heading", name="Votre équipe vous attend.", exact=True)).to_be_visible()
+    await expect(page.get_by_role("heading", name="Un lien pour se retrouver.", exact=True)).to_be_visible()
+    await page.get_by_role("link", name="Comment rejoindre mon équipe", exact=True).click()
+    await expect(page).to_have_url(re.compile(r"/#rejoindre$"))
+    await expect(page.get_by_role("heading", name="Un lien pour se retrouver.", exact=True)).to_be_in_viewport()
+    await layout(page)
+    await page.get_by_role("link", name="Consulter le guide", exact=True).click()
+    await expect(page.get_by_role("heading", name="Des notes partagées, un daily bien préparé.", exact=True)).to_be_visible()
+    await page.goto(BASE, wait_until="domcontentloaded")
+    await page.get_by_role("link", name="En savoir plus : Le rythme de votre équipe.", exact=True).click()
+    await expect(page).to_have_url(re.compile(r"/help#guide-statistiques$"))
+    await expect(page.get_by_role("heading", name="Lire les statistiques", exact=True)).to_be_in_viewport()
+    assert api.gets == 0 and not api.puts, "Homepage must not request team data"
+
+
 async def guide_flow(page, api):
     await page.goto(BASE, wait_until="domcontentloaded")
     await page.get_by_role("link", name="Guide d’utilisation", exact=True).click()
@@ -397,6 +414,8 @@ async def run_case(browser, viewport, motion, case):
             await main_flow(page, api)
         elif case == "guide":
             await guide_flow(page, api)
+        elif case == "home":
+            await home_flow(page, api)
         elif case == "stale-read":
             await stale_read_flow(page, api)
         else:
@@ -420,7 +439,7 @@ async def main():
         try:
             for viewport in ({"width": 1366, "height": 768}, {"width": 320, "height": 568}):
                 for motion in motions:
-                    for case in ("main", "401", "502", "stale-read", "guide"):
+                    for case in ("main", "401", "502", "stale-read", "guide", "home"):
                         await run_case(browser, viewport, motion, case)
         finally:
             await browser.close()

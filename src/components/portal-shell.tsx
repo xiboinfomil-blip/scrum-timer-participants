@@ -28,8 +28,10 @@ export function PortalShell({ children }: { children: ReactNode }) {
   const [tab, setTab] = useState<PortalView>('notes');
   const [guideOpen, setGuideOpen] = useState(false);
   const hasTeam = pathname.startsWith('/t/');
+  const isHelp = pathname === '/help';
+  const isHome = pathname === '/';
   return <NavigationContext.Provider value={{ tab, setTab }}>
-    <AppBar component="header" position="relative" color="transparent" elevation={0} className={`border-b border-line bg-white/95 text-ink backdrop-blur-xl ${hasTeam ? 'team-appbar' : ''}`}>
+    <AppBar component="header" position="relative" color="transparent" elevation={0} className={`border-b border-line bg-white/95 text-ink backdrop-blur-xl ${hasTeam || isHelp || isHome ? 'team-appbar' : ''}`}>
       <a href="#contenu" className="absolute left-3 top-2 z-50 -translate-y-24 rounded-xl bg-brand px-4 py-3 text-xs font-semibold text-white focus:translate-y-0">Aller au contenu</a>
       <div className="mx-auto flex min-h-18 w-full max-w-480 items-center gap-4 px-6 max-[1100px]:gap-2 max-[800px]:flex-wrap max-[800px]:gap-y-1 max-[800px]:px-3 max-[800px]:py-1">
         <Link href="/" aria-label="Accueil de l’espace participants Infomil Mauritius" className="flex min-h-11 shrink-0 items-center rounded-lg pr-4 min-[1101px]:border-r min-[1101px]:border-line max-[800px]:pr-1">
@@ -53,7 +55,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
         </div>
       </div>
     </AppBar>
-    <main id="contenu" tabIndex={-1} className={`mx-auto min-h-[70vh] w-full px-4 py-6 sm:px-6 sm:py-8 ${hasTeam ? 'team-main max-w-7xl' : 'max-w-6xl'}`}>{children}</main>
+    <main id="contenu" tabIndex={-1} className={`mx-auto min-h-[70vh] w-full px-4 py-6 sm:px-6 sm:py-8 ${hasTeam || isHelp || isHome ? 'team-main max-w-7xl' : 'max-w-6xl'}`}>{children}</main>
     <footer className="mx-auto max-w-6xl px-4 py-6 text-xs leading-relaxed text-muted sm:px-6"><span className="font-semibold text-brand">Infomil Mauritius</span> · Sans connexion personnelle. Le lien donne accès aux données partagées de l’équipe. Ne le publiez pas.</footer>
     <Dialog open={guideOpen} onClose={() => setGuideOpen(false)} fullWidth maxWidth="md" aria-labelledby="guide-dialog-title" scroll="paper">
       <DialogTitle id="guide-dialog-title" className="border-b border-line text-lg font-bold text-ink">Guide de l’espace participants</DialogTitle>

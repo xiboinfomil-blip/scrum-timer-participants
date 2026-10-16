@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { Paper } from '@mui/material';
 import { PortalIcon } from './portal-icon';
 
@@ -52,15 +53,32 @@ const sections = [
   },
 ] as const;
 
-export function ParticipantGuide() {
-  return <div className="space-y-4 text-sm leading-relaxed text-muted">
-    <p className="max-w-2xl">Préparez vos idées et retrouvez les repères de votre daily. Ici, seules les notes sont modifiables ; les statistiques et le bilan se consultent en lecture seule.</p>
-    <nav aria-label="Sommaire du guide" className="grid grid-cols-2 gap-2 rounded-2xl border border-line bg-slate-50 p-2 sm:grid-cols-3">
-      {sections.map((section, index) => <a key={section.id} href={`#guide-${section.id}`} className="flex min-h-11 min-w-0 items-center gap-2 rounded-xl bg-white px-3 py-2 text-xs font-semibold text-brand hover:bg-blue-50"><span aria-hidden="true" className="text-[10px] text-muted">{String(index + 1).padStart(2, '0')}</span>{section.title}</a>)}
-    </nav>
-    {sections.map((section, index) => <Paper key={section.id} component="section" id={`guide-${section.id}`} aria-labelledby={`guide-${section.id}-title`} className="scroll-mt-4 p-4 sm:p-5">
-      <header className="mb-3 flex items-center gap-3"><span aria-hidden="true" className="grid size-10 shrink-0 place-items-center rounded-xl bg-blue-50 text-brand"><PortalIcon name={section.icon} className="size-5" /></span><div><p className="text-[10px] font-bold uppercase tracking-widest text-muted">Repère {String(index + 1).padStart(2, '0')}</p><h2 id={`guide-${section.id}-title`} className="text-base font-bold tracking-tight text-ink sm:text-lg">{section.title}</h2></div></header>
-      <div className="space-y-3">{section.paragraphs.map(paragraph => <p key={paragraph}>{paragraph}</p>)}</div>
+const takeaways = [
+  'Le lien d’équipe est votre accès. Gardez-le dans un endroit sûr.',
+  '600 caractères maximum. Un enregistrement n’est confirmé qu’après le message de succès.',
+  'Votre brouillon reste dans cet onglet. Comparez avant de renvoyer une version incertaine.',
+  'Les scores sont des repères ludiques, jamais une évaluation du travail.',
+  'Le bilan du jour suit l’heure de Maurice, pas une ancienne session.',
+  'En cas de doute, gardez l’onglet ouvert pour préserver votre brouillon.',
+] as const;
+
+export function ParticipantGuide({ variant = 'dialog' }: { variant?: 'page' | 'dialog' }) {
+  const [active, setActive] = useState('guide-acces');
+  useEffect(() => {
+    const syncHash = () => setActive(window.location.hash.slice(1) || 'guide-acces');
+    syncHash();
+    window.addEventListener('hashchange', syncHash);
+    return () => window.removeEventListener('hashchange', syncHash);
+  }, []);
+  return <div className={`participant-guide guide-${variant}`}>
+    <aside className="guide-sidebar"><nav aria-label="Sommaire du guide" className="guide-navigation"><p className="guide-nav-eyebrow">DANS CE GUIDE</p>
+      {sections.map((section, index) => <a key={section.id} href={`#guide-${section.id}`} aria-current={active === `guide-${section.id}` ? 'location' : undefined} onClick={() => setActive(`guide-${section.id}`)} className="guide-nav-link"><span aria-hidden="true" className="guide-nav-number">{String(index + 1).padStart(2, '0')}</span><span>{section.title}</span><PortalIcon name="arrow" className="guide-nav-arrow" /></a>)}
+    </nav><div className="guide-sidebar-tip"><span className="help-fact-icon"><PortalIcon name="shield" className="size-5" /></span><p className="font-semibold text-ink">Partagé, pas personnel.</p><p>Le lien ouvre l’espace de toute l’équipe. Évitez les informations sensibles dans vos notes.</p></div></aside>
+    <div className="guide-sections"><p className="guide-intro">Préparez vos idées et retrouvez les repères de votre daily. Ici, seules les notes sont modifiables ; les statistiques et le bilan se consultent en lecture seule.</p>
+    {sections.map((section, index) => <Paper key={section.id} component="section" id={`guide-${section.id}`} aria-labelledby={`guide-${section.id}-title`} className="guide-section">
+      <header className="guide-section-header"><span aria-hidden="true" className="guide-section-icon"><PortalIcon name={section.icon} className="size-5" /></span><div className="min-w-0 flex-1"><p className="guide-section-eyebrow">REPÈRE {String(index + 1).padStart(2, '0')}</p><h2 id={`guide-${section.id}-title`}>{section.title}</h2></div><span className="guide-section-number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span></header>
+      <div className="guide-section-prose">{section.paragraphs.map(paragraph => <p key={paragraph}>{paragraph}</p>)}</div><div className="guide-takeaway"><PortalIcon name="check" className="size-4 shrink-0" /><p>{takeaways[index]}</p></div>
     </Paper>)}
+    </div>
   </div>;
 }
