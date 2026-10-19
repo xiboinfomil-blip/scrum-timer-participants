@@ -4,6 +4,7 @@ import { useEffect, useImperativeHandle, useRef, type Ref } from 'react';
 import { EditorContent, useEditor, useEditorState } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Markdown } from '@tiptap/markdown';
+import { PortalIcon } from './portal-icon';
 
 export type RichNoteEditorHandle = { focus: () => void };
 
@@ -75,13 +76,13 @@ export function RichNoteEditor({ ref, value, onChange, disabled, invalid, id = '
     undo: editor.can().undo(), redo: editor.can().redo(),
   } : null });
   const tools = [
-    { label: 'Gras', icon: <strong>G</strong>, active: state?.bold, run: () => editor?.chain().focus().toggleBold().run() },
-    { label: 'Italique', icon: <em>I</em>, active: state?.italic, run: () => editor?.chain().focus().toggleItalic().run() },
-    { label: 'Barré', icon: <s>S</s>, active: state?.strike, run: () => editor?.chain().focus().toggleStrike().run() },
-    { label: 'Liste à puces', icon: '• ≡', active: state?.bulletList, run: () => editor?.chain().focus().toggleBulletList().run() },
-    { label: 'Liste numérotée', icon: '1. ≡', active: state?.orderedList, run: () => editor?.chain().focus().toggleOrderedList().run() },
-    { label: 'Annuler', icon: '↶', unavailable: !state?.undo, run: () => editor?.chain().focus().undo().run() },
-    { label: 'Rétablir', icon: '↷', unavailable: !state?.redo, run: () => editor?.chain().focus().redo().run() },
+    { label: 'Gras', icon: <PortalIcon name="bold" className="size-5" />, active: state?.bold, run: () => editor?.chain().focus().toggleBold().run() },
+    { label: 'Italique', icon: <PortalIcon name="italic" className="size-5" />, active: state?.italic, run: () => editor?.chain().focus().toggleItalic().run() },
+    { label: 'Barré', icon: <PortalIcon name="strike" className="size-5" />, active: state?.strike, run: () => editor?.chain().focus().toggleStrike().run() },
+    { label: 'Liste à puces', icon: <PortalIcon name="bulletList" className="size-5" />, active: state?.bulletList, run: () => editor?.chain().focus().toggleBulletList().run() },
+    { label: 'Liste numérotée', icon: <PortalIcon name="orderedList" className="size-5" />, active: state?.orderedList, run: () => editor?.chain().focus().toggleOrderedList().run() },
+    { label: 'Annuler', icon: <PortalIcon name="undo" className="size-5" />, unavailable: !state?.undo, run: () => editor?.chain().focus().undo().run() },
+    { label: 'Rétablir', icon: <PortalIcon name="redo" className="size-5" />, unavailable: !state?.redo, run: () => editor?.chain().focus().redo().run() },
   ];
   return <div className={`rich-note-editor ${invalid ? 'is-invalid' : ''} ${disabled ? 'is-disabled' : ''}`}>
     <div className="rich-note-toolbar" role="group" aria-label="Mise en forme de la note">

@@ -18,6 +18,7 @@
     "@emotion/cache": "^11.14.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.3.8",
     "@mui/material": "^9.5.0",
     "@mui/material-nextjs": "^9.5.0",
     "@tiptap/markdown": "3.29.2",
@@ -42,6 +43,9 @@
     "typescript": "^5.9.0"
   },
   "overrides": {
+    "@mui/icons-material": {
+      "@mui/material": "$@mui/material"
+    },
     "@tiptap/core": "3.31.3",
     "@tiptap/pm": "$@tiptap/pm",
     "@tiptap/extension-bubble-menu": "3.31.3",

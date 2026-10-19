@@ -189,6 +189,7 @@ async def loaded(page):
 
 
 async def layout(page):
+    assert await page.locator('svg:not(.MuiSvgIcon-root)').count() == 0, 'All interface icons must use Material Icons'
     assert await page.evaluate("""() => {
         const root = document.documentElement;
         return root.scrollWidth <= root.clientWidth + 1 &&
