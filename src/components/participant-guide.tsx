@@ -16,7 +16,7 @@ const sections = [
     id: 'notes', title: 'Préparer une note du jour', icon: 'notes',
     paragraphs: [
       'Dans « Notes du jour », recherchez un participant puis choisissez « Ajouter une note » ou « Voir / modifier ». Les listes sont paginées ; la recherche ignore les accents.',
-      'Écrivez un point à partager, une idée ou un blocage, puis choisissez « Enregistrer la note ». Le texte doit être non vide et compter au maximum 600 caractères Unicode. Attendez le message « Note enregistrée et partagée avec l’équipe. » avant de considérer l’enregistrement comme confirmé.',
+      'Écrivez un point à partager, une idée ou un blocage. La barre de mise en forme propose le gras, l’italique, le texte barré, les listes à puces et numérotées, ainsi qu’annuler et rétablir. Puis choisissez « Enregistrer la note ». Le texte doit être non vide et compter au maximum 600 caractères Unicode, marqueurs de formatage inclus. Attendez le message « Note enregistrée et partagée avec l’équipe. » avant de considérer l’enregistrement comme confirmé.',
       'La note est visible et modifiable par toute l’équipe jusqu’au prochain minuit à Maurice (UTC+4). Les notes du jour ne constituent pas une archive et ne sont pas transférées automatiquement au lendemain.',
     ],
   },

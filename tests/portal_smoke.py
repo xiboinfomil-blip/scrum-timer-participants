@@ -200,11 +200,11 @@ async def open_editor(page, name="Élodie Martin"):
 async def compare_and_accept(page, draft, revision, server_text):
     box = editor(page)
     await expect(box.get_by_role("button", name="Enregistrer la note", exact=True)).to_be_disabled()
-    await expect(box.get_by_role("textbox")).to_have_value(draft)
+    await expect(box.get_by_role("textbox")).to_have_text(draft, use_inner_text=True)
     await box.get_by_role("button", name="Recharger pour comparer", exact=True).click()
     await expect(box.get_by_text(re.compile(rf"Version serveur .*révision {revision}$"))).to_be_visible()
     await expect(box.get_by_text(server_text, exact=True)).to_be_visible()
-    await expect(box.get_by_role("textbox")).to_have_value(draft)
+    await expect(box.get_by_role("textbox")).to_have_text(draft, use_inner_text=True)
     await box.get_by_role("button", name="Version examinée : conserver mon brouillon", exact=True).click()
     await expect(box.get_by_role("button", name="Enregistrer la note", exact=True)).to_be_enabled()
 
@@ -243,8 +243,8 @@ async def main_flow(page, api):
     await open_editor(page, "Participant 03")
     await editor(page).get_by_role("button", name="Fermer", exact=True).click()
     await open_editor(page)
-    draft = "Préparer la démo 😀\nPartager le point bloquant"
-    await editor(page).get_by_role("textbox").fill(draft)
+    draft = "Préparer la démo 😀\n\nPartager le point bloquant"
+    await editor(page).get_by_role("textbox").fill(draft.replace("\n\n", "\n"))
     guide_button = page.get_by_role("button", name="Guide d’utilisation", exact=True)
     await guide_button.click()
     guide = page.get_by_role("dialog", name="Guide de l’espace participants", exact=True)
@@ -254,7 +254,7 @@ async def main_flow(page, api):
     await guide.get_by_role("button", name="Fermer le guide", exact=True).click()
     await expect(guide).not_to_be_visible()
     await expect(guide_button).to_be_focused()
-    await expect(editor(page).get_by_role("textbox")).to_have_value(draft)
+    await expect(editor(page).get_by_role("textbox")).to_have_text(draft, use_inner_text=True)
     assert not api.puts, "Opening the guide must not save a draft"
     await editor(page).get_by_role("button", name="Enregistrer la note", exact=True).click()
     await expect(editor(page).get_by_role("status")).to_have_text("Note enregistrée et partagée avec l’équipe.")
@@ -281,12 +281,12 @@ async def main_flow(page, api):
     await layout(page)
     await page.get_by_role("button", name="Notes du jour", exact=True).click()
     await open_editor(page)
-    await expect(editor(page).get_by_role("textbox")).to_have_value(draft)
+    await expect(editor(page).get_by_role("textbox")).to_have_text(draft, use_inner_text=True)
     assert len(api.puts) == 1, "Tab navigation must not save automatically"
     await page.reload(wait_until="domcontentloaded")
     await loaded(page)
     await open_editor(page)
-    await expect(editor(page).get_by_role("textbox")).to_have_value(draft)
+    await expect(editor(page).get_by_role("textbox")).to_have_text(draft, use_inner_text=True)
     await expect(editor(page).get_by_role("button", name="Enregistrer la note", exact=True)).to_be_disabled()
 
     # Clean editors intentionally retain their accepted baseline after ANY server
@@ -297,8 +297,8 @@ async def main_flow(page, api):
     await compare_and_accept(page, draft, 2, "Mise à jour distante, éditeur propre")
     assert len(api.puts) == 1, "Acknowledgement is not a save"
 
-    conflict_draft = "Mon brouillon conservé après conflit\nToujours ici 😀"
-    await editor(page).get_by_role("textbox").fill(conflict_draft)
+    conflict_draft = "Mon brouillon conservé après conflit\n\nToujours ici 😀"
+    await editor(page).get_by_role("textbox").fill(conflict_draft.replace("\n\n", "\n"))
     api.conflict_once = True
     await editor(page).get_by_role("button", name="Enregistrer la note", exact=True).click()
     await expect(editor(page).get_by_role("button", name="Recharger pour comparer", exact=True)).to_be_visible()
@@ -314,7 +314,7 @@ async def main_flow(page, api):
     await page.reload(wait_until="domcontentloaded")
     await loaded(page)
     await open_editor(page)
-    await expect(editor(page).get_by_role("textbox")).to_have_value(conflict_draft)
+    await expect(editor(page).get_by_role("textbox")).to_have_text(conflict_draft, use_inner_text=True)
     await editor(page).get_by_role("button", name="Fermer", exact=True).click()
 
 
@@ -331,10 +331,10 @@ async def modal_flow(page, api):
     await editor(page).get_by_role("textbox").fill(draft)
     page.once("dialog", lambda dialog: dialog.dismiss())
     await page.keyboard.press("Escape")
-    await expect(editor(page).get_by_role("textbox")).to_have_value(draft)
+    await expect(editor(page).get_by_role("textbox")).to_have_text(draft, use_inner_text=True)
     page.once("dialog", lambda dialog: dialog.dismiss())
     await page.locator(".note-modal .MuiDialog-container").click(position={"x": 2, "y": 2}, force=True)
-    await expect(editor(page).get_by_role("textbox")).to_have_value(draft)
+    await expect(editor(page).get_by_role("textbox")).to_have_text(draft, use_inner_text=True)
     await editor(page).get_by_role("textbox").fill("x" * 601)
     await expect(editor(page).get_by_role("button", name="Enregistrer la note", exact=True)).to_be_disabled()
     await expect(editor(page).get_by_role("textbox")).to_have_attribute("aria-invalid", "true")
@@ -344,6 +344,55 @@ async def modal_flow(page, api):
     await expect(editor(page)).to_have_count(0)
     await expect(trigger).to_be_focused()
     assert not api.puts, "Dismissal and validation must not save a draft"
+
+
+async def rich_text_flow(page, api):
+    await page.goto(PORTAL, wait_until="domcontentloaded")
+    await loaded(page)
+    await open_editor(page)
+    box = editor(page)
+    field = box.get_by_role("textbox")
+    await field.fill("Une idée importante 😀")
+    await field.press("Control+a")
+    await box.get_by_role("button", name="Gras", exact=True).click()
+    await expect(box.get_by_role("button", name="Gras", exact=True)).to_have_attribute("aria-pressed", "true")
+    await expect(field.locator("strong")).to_have_text("Une idée importante 😀")
+    await box.get_by_role("button", name="Italique", exact=True).click()
+    await expect(field.locator("em")).to_have_text("Une idée importante 😀")
+    await box.get_by_role("button", name="Barré", exact=True).click()
+    await expect(field.locator("s")).to_have_text("Une idée importante 😀")
+    await box.get_by_role("button", name="Liste à puces", exact=True).click()
+    await expect(field.locator("ul li")).to_have_count(1)
+    # Put the caret in the list item, excluding Tiptap's trailing empty paragraph.
+    await field.locator("ul li p").click()
+    await box.get_by_role("button", name="Liste numérotée", exact=True).click()
+    await expect(field.locator("ol li")).to_have_count(1)
+    await box.get_by_role("button", name="Annuler", exact=True).click()
+    await expect(box.get_by_role("button", name="Rétablir", exact=True)).to_be_enabled()
+    await box.get_by_role("button", name="Rétablir", exact=True).click()
+    await expect(field.locator("ol li")).to_have_count(1)
+    await layout(page)
+    await box.get_by_role("button", name="Enregistrer la note", exact=True).click()
+    await expect(box.get_by_role("status")).to_have_text("Note enregistrée et partagée avec l’équipe.")
+    assert len(api.puts) == 1 and "**" in api.puts[0]["hint"] and "~~" in api.puts[0]["hint"]
+    await box.get_by_role("button", name="Fermer", exact=True).click()
+    preview = page.locator(".note-preview").first
+    await expect(preview.locator("strong")).to_have_text("Une idée importante 😀")
+    await expect(preview.locator("em")).to_have_text("Une idée importante 😀")
+    await expect(preview.locator("del")).to_have_text("Une idée importante 😀")
+    await page.reload(wait_until="domcontentloaded")
+    await loaded(page)
+    await open_editor(page)
+    await expect(editor(page).get_by_role("textbox").locator("strong")).to_have_text("Une idée importante 😀")
+    await expect(editor(page).get_by_role("textbox").locator("ol li")).to_have_count(1)
+    await expect(editor(page).get_by_role("button", name="Enregistrer la note", exact=True)).to_be_disabled()
+    await editor(page).get_by_role("button", name="Fermer", exact=True).click()
+    # Shared Markdown cannot execute HTML or load image/link resources.
+    api.note('<img src="https://example.invalid/x" onerror="window.portalInjected=true">\n<script>window.portalInjected=true</script>\n\n**Texte sûr**', 2)
+    await page.get_by_role("button", name="Actualiser", exact=True).click()
+    await expect(page.locator(".note-preview strong")).to_have_text("Texte sûr")
+    assert await page.locator(".note-preview img, .note-preview script, .note-preview a").count() == 0
+    await layout(page)
 
 
 async def error_flow(page, api, status):
@@ -378,7 +427,7 @@ async def stale_read_flow(page, api):
         await expect(editor(page).get_by_role("status")).to_have_text("Note enregistrée et partagée avec l’équipe.")
         gate.set()
         await asyncio.wait_for(api.read_finished.wait(), 10)
-        await expect(editor(page).get_by_role("textbox")).to_have_value(draft)
+        await expect(editor(page).get_by_role("textbox")).to_have_text(draft, use_inner_text=True)
         await expect(editor(page).get_by_role("button", name="Recharger pour comparer", exact=True)).to_have_count(0)
         await expect(notes_panel(page).locator("ul > li").first).to_contain_text(draft)
         assert len(api.puts) == 1 and api.puts[0]["revision"] == 1
@@ -386,7 +435,7 @@ async def stale_read_flow(page, api):
         await page.reload(wait_until="domcontentloaded")
         await loaded(page)
         await open_editor(page)
-        await expect(editor(page).get_by_role("textbox")).to_have_value(draft)
+        await expect(editor(page).get_by_role("textbox")).to_have_text(draft, use_inner_text=True)
         await editor(page).get_by_role("button", name="Fermer", exact=True).click()
     finally:
         gate.set()
@@ -449,6 +498,8 @@ async def run_case(browser, viewport, motion, case):
             await home_flow(page, api)
         elif case == "modal":
             await modal_flow(page, api)
+        elif case == "rich-text":
+            await rich_text_flow(page, api)
         elif case == "stale-read":
             await stale_read_flow(page, api)
         else:
@@ -472,7 +523,7 @@ async def main():
         try:
             for viewport in ({"width": 1366, "height": 768}, {"width": 320, "height": 568}):
                 for motion in motions:
-                    for case in ("main", "401", "502", "stale-read", "guide", "home", "modal"):
+                    for case in ("main", "401", "502", "stale-read", "guide", "home", "modal", "rich-text"):
                         await run_case(browser, viewport, motion, case)
         finally:
             await browser.close()
