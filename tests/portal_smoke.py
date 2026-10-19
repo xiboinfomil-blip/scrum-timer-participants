@@ -395,6 +395,17 @@ async def rich_text_flow(page, api):
     await layout(page)
 
 
+async def no_midnight_refresh_flow(page, api):
+    api.note("Le serveur gère le nettoyage", 1)
+    await page.goto(PORTAL, wait_until="domcontentloaded")
+    await loaded(page)
+    reads = api.gets
+    await page.clock.fast_forward(24 * 60 * 60 * 1000)
+    await expect(page.locator(".note-preview")).to_have_text("Le serveur gère le nettoyage")
+    assert api.gets == reads, "No scheduled refresh at midnight or after 24 hours"
+    assert not api.puts, "The portal must not clear notes itself"
+
+
 async def error_flow(page, api, status):
     api.read_status = status
     await page.goto(PORTAL, wait_until="domcontentloaded")
@@ -500,6 +511,8 @@ async def run_case(browser, viewport, motion, case):
             await modal_flow(page, api)
         elif case == "rich-text":
             await rich_text_flow(page, api)
+        elif case == "no-midnight-refresh":
+            await no_midnight_refresh_flow(page, api)
         elif case == "stale-read":
             await stale_read_flow(page, api)
         else:
@@ -523,7 +536,7 @@ async def main():
         try:
             for viewport in ({"width": 1366, "height": 768}, {"width": 320, "height": 568}):
                 for motion in motions:
-                    for case in ("main", "401", "502", "stale-read", "guide", "home", "modal", "rich-text"):
+                    for case in ("main", "401", "502", "stale-read", "guide", "home", "modal", "rich-text", "no-midnight-refresh"):
                         await run_case(browser, viewport, motion, case)
         finally:
             await browser.close()

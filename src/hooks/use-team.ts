@@ -1,7 +1,7 @@
 'use client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { parseNotes, parsePortal } from '@/lib/contracts';
-import { mauritiusDay, nextMauritiusMidnight } from '@/lib/statistics';
+import { mauritiusDay } from '@/lib/statistics';
 import type { NoteInput, Notes, PortalData } from '@/types/portal';
 
 export class PortalError extends Error {
@@ -74,17 +74,12 @@ export function useTeam(token: string) {
     const initial = setTimeout(() => void refresh(), 0);
     const visible = () => { if (document.visibilityState === 'visible') { setNow(new Date()); void refresh(); } };
     document.addEventListener('visibilitychange', visible);
-    let midnight: ReturnType<typeof setTimeout>;
-    const schedule = () => {
-      midnight = setTimeout(() => { setNow(new Date()); void refresh(); schedule(); }, Math.max(50, nextMauritiusMidnight() - Date.now() + 50));
-    };
-    schedule();
     return () => {
       mounted.current = false;
       // This is a request generation counter, not a DOM node reference.
       // eslint-disable-next-line react-hooks/exhaustive-deps
       ++generation.current;
-      readController.current?.abort(); writeController.current?.abort(); clearTimeout(initial); clearTimeout(midnight); document.removeEventListener('visibilitychange', visible);
+      readController.current?.abort(); writeController.current?.abort(); clearTimeout(initial); document.removeEventListener('visibilitychange', visible);
     };
   }, [refresh]);
   return { data, error, loading, saving, refresh, save, now, day: mauritiusDay(now) };
