@@ -13,12 +13,15 @@ type Props = {
   onChange: (value: string) => void;
   disabled: boolean;
   invalid: boolean;
+  id?: string;
+  placeholder?: string;
+  autoFocus?: boolean;
 };
 
 // Soft line breaks stay compatible with existing LF-only notes.
 const markdownValue = (editor: NonNullable<ReturnType<typeof useEditor>>) => editor.getMarkdown().replace(/ {2}\n/g, '\n');
 
-export function RichNoteEditor({ ref, value, onChange, disabled, invalid }: Props) {
+export function RichNoteEditor({ ref, value, onChange, disabled, invalid, id = 'note', placeholder = 'Ce que j’aimerais partager avec l’équipe…', autoFocus = true }: Props) {
   const lastValue = useRef(value);
   const editor = useEditor({
     immediatelyRender: false,
@@ -31,10 +34,10 @@ export function RichNoteEditor({ ref, value, onChange, disabled, invalid }: Prop
     editable: !disabled,
     editorProps: {
       attributes: {
-        id: 'note', role: 'textbox', 'aria-multiline': 'true',
-        'aria-labelledby': 'note-label', 'aria-describedby': 'note-help note-format-help note-count',
+        id, role: 'textbox', 'aria-multiline': 'true',
+        'aria-labelledby': `${id}-label`, 'aria-describedby': 'note-help note-format-help note-count',
         'aria-invalid': String(invalid), 'aria-disabled': String(disabled),
-        'data-placeholder': 'Ce que j’aimerais partager avec l’équipe…',
+        'data-placeholder': placeholder,
         class: 'rich-note-content note-rich-text',
       },
     },
@@ -42,7 +45,7 @@ export function RichNoteEditor({ ref, value, onChange, disabled, invalid }: Prop
       lastValue.current = markdownValue(editor);
       onChange(lastValue.current);
     },
-    onCreate: ({ editor }) => editor.commands.focus('end', { scrollIntoView: false }),
+    onCreate: ({ editor }) => { if (autoFocus) editor.commands.focus('end', { scrollIntoView: false }); },
   });
   useImperativeHandle(ref, () => ({ focus: () => { editor?.commands.focus(undefined, { scrollIntoView: false }); } }), [editor]);
   useEffect(() => {

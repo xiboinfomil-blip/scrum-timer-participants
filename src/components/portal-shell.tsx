@@ -31,7 +31,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
   const isHelp = pathname === '/help';
   const isHome = pathname === '/';
   return <NavigationContext.Provider value={{ tab, setTab, openGuide: () => setGuideOpen(true) }}>
-    <AppBar component="header" position="relative" color="transparent" elevation={0} className={`border-b border-line bg-white/95 text-ink backdrop-blur-xl ${hasTeam || isHelp || isHome ? 'team-appbar' : ''}`}>
+    <AppBar component="header" position="relative" color="transparent" elevation={0} className={`portal-appbar border-b border-line bg-white/95 text-ink backdrop-blur-xl ${hasTeam || isHelp || isHome ? 'team-appbar' : ''}`}>
       <a href="#contenu" className="absolute left-3 top-2 z-50 -translate-y-24 rounded-xl bg-brand px-4 py-3 text-xs font-semibold text-white focus:translate-y-0">Aller au contenu</a>
       <div className="mx-auto flex min-h-18 w-full max-w-480 items-center gap-4 px-6 max-[1100px]:gap-2 max-[800px]:flex-wrap max-[800px]:gap-y-1 max-[800px]:px-3 max-[800px]:py-1">
         <Link href="/" aria-label="Accueil de l’espace participants Infomil Mauritius" className="flex min-h-11 shrink-0 items-center rounded-lg pr-4 min-[1101px]:border-r min-[1101px]:border-line max-[800px]:pr-1">
@@ -43,9 +43,8 @@ export function PortalShell({ children }: { children: ReactNode }) {
           <div className="grid grid-cols-3 gap-1">{views.map(view => {
             const active = tab === view.id;
             return <ButtonBase key={view.id} aria-pressed={active} onClick={() => setTab(view.id)} className={`relative flex min-h-11 min-w-0 items-center justify-center gap-2 rounded-xl px-2 transition-colors max-[420px]:gap-1 ${active ? 'bg-white text-brand shadow-sm ring-1 ring-slate-200/80' : 'text-muted hover:bg-white hover:text-brand'}`}>
-              <span aria-hidden="true" className={`grid size-7 shrink-0 place-items-center rounded-lg max-[420px]:hidden ${active ? 'bg-brand text-white' : 'bg-slate-200/70 text-muted'}`}><PortalIcon name={view.icon} className="size-4" /></span>
+              <span aria-hidden="true" className="nav-view-icon"><PortalIcon name={view.icon} className="size-4" /></span>
               <span className="truncate text-xs font-semibold max-[420px]:text-[10px]">{view.label}</span>
-              {active && <span aria-hidden="true" className="absolute inset-x-5 bottom-0 h-0.5 rounded-full bg-accent" />}
             </ButtonBase>;
           })}</div>
         </nav>}
@@ -56,7 +55,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
       </div>
     </AppBar>
     <main id="contenu" tabIndex={-1} className={`mx-auto min-h-[70vh] w-full px-4 py-6 sm:px-6 sm:py-8 ${hasTeam || isHelp || isHome ? 'team-main max-w-7xl' : 'max-w-6xl'}`}>{children}</main>
-    <footer className="mx-auto max-w-6xl px-4 py-6 text-xs leading-relaxed text-muted sm:px-6"><span className="font-semibold text-brand">Infomil Mauritius</span> · Sans connexion personnelle. Le lien donne accès aux données partagées de l’équipe. Ne le publiez pas.</footer>
+    <footer className="portal-footer mx-auto max-w-6xl px-4 py-6 text-xs leading-relaxed text-muted sm:px-6"><span className="font-semibold text-brand">Infomil Mauritius</span><span>Espace participants · Votre lien reste confidentiel.</span></footer>
     <Dialog open={guideOpen} onClose={() => setGuideOpen(false)} fullWidth maxWidth="md" aria-labelledby="guide-dialog-title" scroll="paper">
       <DialogTitle id="guide-dialog-title" className="border-b border-line text-lg font-bold text-ink">Guide de l’espace participants</DialogTitle>
       <DialogContent dividers><ParticipantGuide /></DialogContent>
