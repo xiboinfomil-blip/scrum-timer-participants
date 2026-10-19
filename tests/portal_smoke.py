@@ -821,6 +821,13 @@ def assert_preference_storage(entries):
 
 
 async def welcome_flow(page, api):
+    # Block hydration scripts: the intro must already exist in server HTML.
+    first_paint = await page.context.new_page()
+    await first_paint.route('**/*.js', lambda route: route.abort())
+    await first_paint.goto(BASE, wait_until='domcontentloaded')
+    await expect(first_paint.get_by_role('dialog', name='MoodMeter.', exact=True)).to_be_visible()
+    await expect(first_paint.locator('#portal-content')).to_have_css('visibility', 'hidden')
+    await first_paint.close()
     gate = asyncio.Event()
     api.initial_gate = gate
     await page.goto(PORTAL, wait_until="domcontentloaded")
