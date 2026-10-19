@@ -22,6 +22,9 @@ import FormatListBulletedRounded from '@mui/icons-material/FormatListBulletedRou
 import FormatListNumberedRounded from '@mui/icons-material/FormatListNumberedRounded';
 import UndoRounded from '@mui/icons-material/UndoRounded';
 import RedoRounded from '@mui/icons-material/RedoRounded';
+import SentimentNeutralRounded from '@mui/icons-material/SentimentNeutralRounded';
+import SentimentSatisfiedAltRounded from '@mui/icons-material/SentimentSatisfiedAltRounded';
+import SentimentVerySatisfiedRounded from '@mui/icons-material/SentimentVerySatisfiedRounded';
 
 const icons = {
   pin: PushPinOutlined,
@@ -47,6 +50,9 @@ const icons = {
   orderedList: FormatListNumberedRounded,
   undo: UndoRounded,
   redo: RedoRounded,
+  moodCalm: SentimentNeutralRounded,
+  moodHappy: SentimentSatisfiedAltRounded,
+  moodGreat: SentimentVerySatisfiedRounded,
 } as const;
 
 export function PortalIcon({ name, ...props }: SvgIconProps & { name: keyof typeof icons }) {

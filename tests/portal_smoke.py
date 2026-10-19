@@ -820,6 +820,36 @@ def assert_preference_storage(entries):
         assert TOKEN not in value and '"hint"' not in value, "Notes/capabilities must never be persisted"
 
 
+async def welcome_flow(page, api):
+    gate = asyncio.Event()
+    api.initial_gate = gate
+    await page.goto(PORTAL, wait_until="domcontentloaded")
+    intro = page.get_by_role('dialog', name='MoodMeter.', exact=True)
+    await expect(intro).to_be_visible()
+    skip = intro.get_by_role('button', name='Fermer l’introduction')
+    await expect(skip).to_be_focused()
+    await layout(page)
+    await page.clock.fast_forward(4000)
+    await expect(intro).to_be_visible()
+    await page.clock.fast_forward(1500)
+    await expect(intro).to_have_count(0)
+    await expect(page.get_by_role('status').filter(has_text='Chargement de votre équipe…')).to_be_visible()
+    gate.set()
+    await loaded(page)
+    await page.get_by_role('link', name='Accueil de l’espace participants Infomil Mauritius').click()
+    await expect(page.get_by_role('heading', name='Votre équipe vous attend.', exact=True)).to_be_visible()
+    await expect(intro).to_have_count(0)
+    await page.reload(wait_until='domcontentloaded')
+    await expect(intro).to_be_visible()
+    await intro.get_by_role('button', name='Fermer l’introduction').click()
+    await expect(intro).to_have_count(0)
+    await expect(page.locator('#contenu')).to_be_focused()
+    await page.reload(wait_until='domcontentloaded')
+    await expect(intro).to_be_visible()
+    await page.keyboard.press('Escape')
+    await expect(intro).to_have_count(0)
+
+
 async def run_case(browser, viewport, motion, case):
     # Each case has fresh cookies, storage, document, mocks and in-memory state.
     context = await browser.new_context(viewport=viewport, reduced_motion=motion,
@@ -847,8 +877,12 @@ async def run_case(browser, viewport, motion, case):
     # HTTP 401/409/502 resource messages are expected; JS console exceptions are not.
     page.on("console", lambda msg: errors.append(msg.text) if msg.type == "error" and not re.search(r"Failed to load resource.*(?:401|409|502)", msg.text) else None)
     await page.clock.set_fixed_time(now)
+    if case != 'welcome':
+        await page.add_locator_handler(page.get_by_role('button', name='Fermer l’introduction'), lambda locator: locator.click())
     try:
-        if case == "main":
+        if case == "welcome":
+            await welcome_flow(page, api)
+        elif case == "main":
             await main_flow(page, api)
         elif case == "guide":
             await guide_flow(page, api)
@@ -901,7 +935,7 @@ async def main():
         try:
             for viewport in ({"width": 1366, "height": 768}, {"width": 320, "height": 568}):
                 for motion in motions:
-                    for case in ("main", "401", "502", "stale-read", "guide", "home", "modal", "rich-text", "three-section", "no-midnight-refresh", "favorites", "inline-note", "appearance", "keyboard-connection", "failed-write"):
+                    for case in ("welcome", "main", "401", "502", "stale-read", "guide", "home", "modal", "rich-text", "three-section", "no-midnight-refresh", "favorites", "inline-note", "appearance", "keyboard-connection", "failed-write"):
                         await run_case(browser, viewport, motion, case)
         finally:
             await browser.close()
