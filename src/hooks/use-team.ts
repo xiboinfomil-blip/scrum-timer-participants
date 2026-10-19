@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { parseNotes, parsePortal } from '@/lib/contracts';
 import { mauritiusDay } from '@/lib/statistics';
 import type { NoteInput, Notes, PortalData } from '@/types/portal';
+import { useDraftWorkspace } from '@/providers/draft-provider';
 
 export class PortalError extends Error {
   status: number;
@@ -20,6 +21,7 @@ async function readResponse(response: Response) {
   return response.json() as Promise<unknown>;
 }
 export function useTeam(token: string) {
+  const { workspace, uncertain } = useDraftWorkspace(token);
   const [data, setData] = useState<PortalData | null>(null);
   const [error, setError] = useState<PortalError | null>(null);
   const [loading, setLoading] = useState(true);
@@ -52,6 +54,7 @@ export function useTeam(token: string) {
     }
   }, [token]);
   const save = useCallback(async (input: NoteInput): Promise<Notes> => {
+    if (workspace.snapshot().includes(input.participantId)) throw new PortalError(409, 'Rechargez et comparez avant tout nouvel enregistrement.');
     if (writing.current) throw new PortalError(409, 'Un enregistrement est déjà en cours.');
     writing.current = true; setSaving(true);
     const id = ++generation.current; readController.current?.abort(); setLoading(false);
@@ -69,13 +72,14 @@ export function useTeam(token: string) {
       setData(previous => previous ? { ...previous, ...notes } : previous); setError(null); setNow(new Date()); setWriteStatus('saved');
       return notes;
     } catch (e) {
+      workspace.markUncertain(input.participantId);
       if (mounted.current) setWriteStatus('uncertain');
       throw e;
     } finally {
       clearTimeout(timeout); writing.current = false; writeController.current = null;
       if (mounted.current) setSaving(false);
     }
-  }, [token]);
+  }, [token, workspace]);
   useEffect(() => {
     mounted.current = true;
     const connection = () => setOnline(navigator.onLine);
@@ -93,6 +97,6 @@ export function useTeam(token: string) {
       window.removeEventListener('online', connection); window.removeEventListener('offline', connection);
     };
   }, [refresh]);
-  const connectionStatus = !online || error ? 'Connexion indisponible' : saving ? 'Enregistrement…' : writeStatus === 'uncertain' ? 'Enregistrement à vérifier' : loading ? 'Actualisation…' : writeStatus === 'saved' ? 'Enregistré' : 'À jour';
-  return { data, error, loading, saving, refresh, save, now, day: mauritiusDay(now), connectionStatus };
+  const connectionStatus = !online || error ? 'Connexion indisponible' : saving ? 'Enregistrement…' : uncertain.length ? 'Enregistrement à vérifier' : loading ? 'Actualisation…' : writeStatus === 'saved' ? 'Enregistré' : 'À jour';
+  return { data, error, loading, saving, refresh, save, now, day: mauritiusDay(now), connectionStatus, workspace, uncertain };
 }

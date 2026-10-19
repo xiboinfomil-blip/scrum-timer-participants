@@ -10,17 +10,20 @@ import { characterCount, validateNote } from '@/lib/contracts';
 import { mauritiusDay } from '@/lib/statistics';
 import { NOTE_SECTIONS, parseNoteSections, serializeNoteSections } from '@/lib/note-sections';
 import type { NoteInput, Notes, PortalData } from '@/types/portal';
+import type { DraftSnapshot } from '@/providers/draft-provider';
 
 type Props = {
   participant: { id: string; name: string }; data: PortalData; day: string; saving: boolean;
   save: (input: NoteInput) => Promise<Notes>; refresh: () => Promise<PortalData | null>;
   onClose: () => void;
+  retained?: DraftSnapshot; unresolved: boolean;
+  retain: (snapshot: DraftSnapshot) => void; resolve: () => void;
 };
-export function NoteEditor({ participant, data, day, saving, save, refresh, onClose }: Props) {
+export function NoteEditor({ participant, data, day, saving, save, refresh, onClose, retained, unresolved, retain, resolve }: Props) {
   const { openGuide } = usePortalNavigation();
   const current = data.hints.find(h => h.participantId === participant.id);
-  const [base, setBase] = useState(() => ({ day: data.day, hint: current?.hint ?? '', revision: current?.revision ?? 0 }));
-  const [draft, setDraft] = useState(base.hint);
+  const [base, setBase] = useState(() => retained?.base ?? ({ day: data.day, hint: current?.hint ?? '', revision: current?.revision ?? 0 }));
+  const [draft, setDraft] = useState(retained?.draft ?? base.hint);
   const [message, setMessage] = useState('');
   const [uncertain, setUncertain] = useState(false);
   const [review, setReview] = useState<{ day: string; hint: string; revision: number } | null>(null);
@@ -32,7 +35,8 @@ export function NoteEditor({ participant, data, day, saving, save, refresh, onCl
   const dirty = draft !== base.hint;
   const removed = !data.team.roster.some(p => p.id === participant.id);
   const changed = base.day !== day || base.day !== data.day || (current?.revision ?? 0) !== base.revision || (current?.hint ?? '') !== base.hint;
-  const conflict = uncertain || changed;
+  const conflict = unresolved || uncertain || changed;
+  useEffect(() => { retain({ base, draft }); }, [base, draft, retain]);
   useEffect(() => {
     if (!dirty && !saving) return;
     const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ''; };
@@ -69,6 +73,10 @@ export function NoteEditor({ participant, data, day, saving, save, refresh, onCl
     if (saving || reviewing) return;
     if (!dirty || window.confirm('Abandonner ce brouillon non enregistré ?')) onClose();
   }
+  function acceptReview(value: NonNullable<typeof review>) {
+    setBase(value);
+    resolve();
+  }
   const count = characterCount(draft.trim());
   const sections = parseNoteSections(draft);
   const cannotSave = saving || reviewing || conflict || removed || !dirty || !draft.trim() || count > 600;
@@ -86,13 +94,13 @@ export function NoteEditor({ participant, data, day, saving, save, refresh, onCl
     <p id="note-help" className="sr-only">Une section suffit. Note partagée et modifiable par toute l’équipe.</p>
     <div className="note-sections">{NOTE_SECTIONS.map((section, index) => <section key={section.key} className={`note-section note-section-${section.key}`} aria-labelledby={`note-${section.key}-label`}>
       <div className="note-section-heading"><span aria-hidden="true">{section.number}</span><div><label id={`note-${section.key}-label`} htmlFor={`note-${section.key}`} className="note-modal-label">{section.label}</label></div></div>
-      <RichNoteEditor ref={index === 0 ? inputRef : undefined} id={`note-${section.key}`} placeholder={section.placeholder} autoFocus={index === 0} value={sections[section.key]} disabled={saving || reviewing} invalid={count > 600} onChange={value => { setDraft(previous => serializeNoteSections({ ...parseNoteSections(previous), [section.key]: value.replace(/\r\n?/g, '\n') })); setReview(null); }} />
+      <RichNoteEditor ref={index === 0 ? inputRef : undefined} id={`note-${section.key}`} placeholder={section.placeholder} autoFocus={index === 0} value={sections[section.key]} disabled={saving || reviewing} invalid={count > 600} onChange={value => { setDraft(previous => serializeNoteSections({ ...parseNoteSections(previous), [section.key]: value.replace(/\r\n?/g, '\n') })); setMessage(''); setReview(null); }} />
     </section>)}</div>
     <div className="note-modal-count"><span><span className={dirty || conflict ? 'draft-dot' : 'saved-dot'} />{saving ? 'Enregistrement…' : conflict ? 'Enregistrement à vérifier' : dirty ? 'Brouillon non enregistré' : 'Aucune modification en attente'}</span><p id="note-count" className={count > 600 ? 'text-danger' : ''}>{count} / 600 <span className="sr-only">caractères Unicode, formatage inclus</span></p></div><p id="note-format-help" className="note-format-help">Titres et formatage inclus. <kbd>Ctrl / ⌘ + Entrée</kbd> pour enregistrer.</p>
     <div className="note-modal-feedback">
     {removed && <Alert severity="error" role="alert">Ce participant ne figure plus dans l’équipe. Le brouillon est conservé mais ne peut pas être enregistré.</Alert>}
     {conflict && <div className="space-y-3"><Alert severity="warning" role="alert">La version ou la journée a changé, ou le dernier enregistrement n’est pas confirmé. Votre brouillon n’a pas été remplacé. Rechargez et comparez avant tout nouvel enregistrement.</Alert><ActionButton type="button" disabled={saving || reviewing} onClick={() => void loadReview()}>{reviewing ? 'Rechargement…' : 'Recharger pour comparer'}</ActionButton>
-      {review && <div className="note-modal-review space-y-3"><p className="text-xs font-semibold">Version serveur · {review.day} · révision {review.revision}</p><NoteContent className="rounded-lg bg-white p-3 text-sm" value={review.hint || 'Aucune note enregistrée.'} /><ActionButton type="button" disabled={review.day !== day || removed} onClick={() => { setBase(review); setUncertain(false); setReview(null); setMessage('Version examinée. Le brouillon est conservé ; vérifiez-le puis enregistrez explicitement.'); }}>Version examinée : conserver mon brouillon</ActionButton><ActionButton type="button" onClick={() => { if (window.confirm('Remplacer votre brouillon par la version du serveur ?')) { setBase(review); setDraft(review.hint); setUncertain(false); setReview(null); setMessage('Version serveur chargée.'); } }}>Remplacer mon brouillon par cette version</ActionButton></div>}
+      {review && <div className="note-modal-review space-y-3"><p className="text-xs font-semibold">Version serveur · {review.day} · révision {review.revision}</p><NoteContent className="rounded-lg bg-white p-3 text-sm" value={review.hint || 'Aucune note enregistrée.'} /><ActionButton type="button" disabled={review.day !== day || removed} onClick={() => { acceptReview(review); setUncertain(false); setReview(null); setMessage('Version examinée. Le brouillon est conservé ; vérifiez-le puis enregistrez explicitement.'); }}>Version examinée : conserver mon brouillon</ActionButton><ActionButton type="button" onClick={() => { if (window.confirm('Remplacer votre brouillon par la version du serveur ?')) { acceptReview(review); setDraft(review.hint); setUncertain(false); setReview(null); setMessage('Version serveur chargée.'); } }}>Remplacer mon brouillon par cette version</ActionButton></div>}
     </div>}
     <p role="status" className={`note-modal-message ${message && !conflict ? 'is-confirmed' : ''}`}>{message}</p></div>
     <div className="note-modal-tip"><PortalIcon name="shield" className="size-4 shrink-0" /><p>Évitez les informations sensibles. Votre brouillon reste dans cet onglet jusqu’à l’enregistrement.</p></div>

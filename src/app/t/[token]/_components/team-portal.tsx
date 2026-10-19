@@ -65,7 +65,10 @@ export function TeamPortal({ token }: { token: string }) {
         </li>;
       })}</ul>}
       <Pagination page={list.page} pages={list.pages} onPage={setPage} label="Participants" />
-      {selected && <NoteEditor key={selected.id} participant={selected} data={data} day={team.day} saving={team.saving} save={team.save} refresh={team.refresh} onClose={() => setSelected(null)} />}
+      {selected && <NoteEditor key={selected.id} participant={selected} data={data} day={team.day} saving={team.saving} save={team.save} refresh={team.refresh}
+        retained={team.workspace.drafts.get(selected.id)} unresolved={team.uncertain.includes(selected.id)}
+        retain={snapshot => { team.workspace.drafts.set(selected.id, snapshot); }} resolve={() => team.workspace.resolve(selected.id)}
+        onClose={() => { team.workspace.drafts.delete(selected.id); setSelected(null); }} />}
     </Panel></div>
     <div hidden={tab !== 'statistics'}><Results kind="statistics" data={data} now={team.now} /></div>
     <div hidden={tab !== 'summary'}><Results kind="summary" data={data} now={team.now} /></div>
