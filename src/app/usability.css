@@ -1,0 +1,180 @@
+/* Task-first layout. Semantic surfaces serve both themes and all densities. */
+:root {
+  --ui-canvas: #f4f7fb;
+  --ui-surface: #fff;
+  --ui-soft: #f7f9fc;
+  --ui-border: #dfe7f0;
+  --ui-text: #193752;
+  --ui-muted: #52677d;
+  --ui-accent: #205f9d;
+}
+html[data-theme="dark"] {
+  --ui-canvas: #101a28;
+  --ui-surface: #182638;
+  --ui-soft: #213349;
+  --ui-border: #3a5068;
+  --ui-text: #e8f0fa;
+  --ui-muted: #b5c5d8;
+  --ui-accent: #91c7ff;
+}
+body { background: var(--ui-canvas); }
+.portal-appbar { background: var(--ui-surface); }
+.team-appbar > div { min-height: 80px; max-width: 1240px; gap: 20px; }
+.portal-appbar nav { max-width: 500px; border-radius: 14px; padding: 5px; }
+.portal-appbar nav .MuiButtonBase-root { min-height: 44px; border-radius: 10px; }
+.portal-appbar nav .MuiButtonBase-root > span:last-child { font-size: 13px; }
+.portal-appbar > div > div:last-child > .MuiButtonBase-root { min-width: 44px; min-height: 44px; }
+.team-main { max-width: 1200px; padding-block: 32px 24px; }
+.team-workspace { gap: 24px; }
+.team-hero { padding-bottom: 0; border-bottom: 0; }
+.team-hero h1 { font-size: clamp(26px, 3vw, 36px); letter-spacing: -.04em; }
+.hero-meta { margin-top: 10px; font-size: 13px; color: var(--ui-muted); gap: 10px 20px; }
+.hero-meta > span:last-child { display: inline-flex; }
+.hero-actions { gap: 12px; max-width: none; }
+.hero-actions .MuiButton-root { min-height: 44px; font-size: 13px; padding-inline: 16px; border-radius: 10px; }
+.connection-indicator { font-size: 12px; color: var(--ui-muted); }
+.connection-indicator > span { flex-shrink: 0; width: 7px; height: 7px; }
+.team-workspace section.MuiPaper-root { padding: 24px; border-radius: 20px; box-shadow: 0 4px 24px #19375204; }
+.team-workspace section.MuiPaper-root > header { padding-bottom: 16px; margin-bottom: 16px; }
+.team-workspace section.MuiPaper-root > header > h2 { font-size: 21px; }
+.notes-overview { margin-bottom: 18px; }
+.notes-completion { text-align: left; font-size: 13px; color: var(--ui-muted); width: 100%; display: flex; align-items: center; gap: 20px; }
+.notes-completion .note-progress { flex: 1; max-width: 180px; height: 5px; margin: 0; }
+.roster-toolbar { gap: 16px; margin-bottom: 20px; }
+.roster-toolbar > div { max-width: 520px; }
+.roster-toolbar .MuiOutlinedInput-root { min-height: 48px; font-size: 15px; border-radius: 12px; }
+.roster-toolbar .MuiIconButton-root { min-width: 44px; min-height: 44px; }
+.roster-count { font-size: 12px; color: var(--ui-muted); }
+.participant-card, html[data-density="comfortable"] .participant-card {
+  display: grid; grid-template-columns: 44px minmax(0, 1fr) auto 44px;
+  align-items: start; gap: 14px; padding: 20px 12px;
+  border-bottom: 1px solid var(--ui-border); border-radius: 12px;
+}
+.participant-avatar { grid-column: 1; grid-row: 1; padding-top: 2px; }
+.participant-avatar .MuiAvatar-root { width: 44px; height: 44px; border-radius: 14px; font-size: 14px; }
+.participant-copy, .participant-card.is-expanded .participant-copy { grid-column: 2; grid-row: 1; min-width: 0; }
+.participant-name, html[data-density="comfortable"] .participant-name { font-size: 16px; line-height: 1.5; font-weight: 650; }
+.participant-status, html[data-density="comfortable"] .participant-status { font-size: 12px; line-height: 1.6; margin-top: 4px; gap: 7px; }
+.participant-action.MuiButton-root { grid-column: 3; grid-row: 1; min-height: 44px; font-size: 13px; padding-inline: 16px; border-radius: 10px; margin: 0; }
+.favorite-toggle.MuiIconButton-root { grid-column: 4; grid-row: 1; width: 44px; min-width: 44px; height: 44px; border-radius: 12px; }
+.note-preview, html[data-density="comfortable"] .note-preview { margin-top: 10px; font-size: 14px; line-height: 1.7; }
+.note-section-preview, html[data-density="comfortable"] .note-section-preview { max-height: 52px; }
+.note-section-preview > div > span, html[data-density="comfortable"] .note-section-preview > div > span { font-size: 11px; }
+.note-updated { font-size: 11px; margin-top: 8px; color: var(--ui-muted); }
+.note-expand-toggle { min-height: 44px; font-size: 13px; gap: 8px; padding-inline: 2px; }
+.expanded-note { grid-column: 1 / -1; padding: 20px; border-radius: 14px; gap: 24px; }
+.expanded-note h3 { font-size: 13px; }
+.expanded-note .note-rich-text { font-size: 14px; line-height: 1.8; }
+.note-section-empty { font-size: 13px; }
+.team-workspace nav[aria-label="Participants"] { padding-top: 20px; margin-top: 16px; }
+.workspace-notice { font-size: 12px; line-height: 1.7; }
+.portal-footer { max-width: 1200px; font-size: 12px; padding-block: 24px; }
+.team-workspace details > summary { min-height: 44px; font-size: 14px; }
+.team-workspace dl .MuiPaper-root { padding: 20px; border-radius: 14px; }
+.note-modal .MuiDialog-paper { border-radius: 22px; max-width: 1020px; }
+.note-modal-header { padding: 20px 24px; }
+.note-modal-close.MuiIconButton-root { min-width: 44px; min-height: 44px; }
+.note-modal-eyebrow { display: none; }
+.note-modal-header h2 { font-size: 22px; margin: 0; }
+.note-modal-person p { font-size: 16px; }
+.note-sections { gap: 16px; }
+.note-section-heading, html[data-density="comfortable"] .note-section-heading { min-height: 58px; align-items: center; margin-bottom: 10px; }
+.note-section .note-modal-label { font-size: 14px; line-height: 1.5; }
+.rich-note-toolbar, html[data-density="comfortable"] .rich-note-toolbar { display: flex; flex-wrap: wrap; gap: 2px; padding: 4px; }
+.rich-note-toolbar button, html[data-density="comfortable"] .rich-note-toolbar button { min-width: 36px; min-height: 44px; font-size: 14px; border-radius: 7px; }
+.rich-note-content, html[data-density="comfortable"] .rich-note-content { font-size: 16px; line-height: 1.8; min-height: 180px; padding: 14px; }
+.note-modal-count { font-size: 12px; flex-wrap: wrap; }
+.note-format-help { font-size: 12px; line-height: 1.8; }
+.note-modal-tip { font-size: 12px; line-height: 1.7; }
+.note-modal-footer { padding: 16px 24px; }
+.note-modal-footer > .MuiButton-root { min-height: 48px; font-size: 14px; padding-inline: 20px; }
+.note-modal-tools .MuiButton-root { min-height: 44px; font-size: 13px; }
+.home-page { gap: 32px; }
+.home-hero { padding: 48px; border-radius: 24px; gap: 40px; }
+.home-hero h1 { font-size: clamp(38px, 4.5vw, 60px); }
+.home-hero-intro { font-size: 15px; line-height: 1.8; }
+.home-hero-reassurance { font-size: 12px; }
+.home-preview-badge { display: none; }
+.home-primary-link, .home-secondary-link { min-height: 48px; font-size: 14px; border-radius: 12px; }
+.home-join, .home-feature-card, .home-access-note, .home-guide-banner { border-radius: 20px; }
+.home-steps p, .home-feature-description, .home-join-intro > p:last-child { font-size: 14px; line-height: 1.8; }
+.home-feature-link, .home-access-note > a { min-height: 44px; font-size: 13px; }
+.guide-section-prose { font-size: 15px; line-height: 1.9; }
+.guide-nav-link { font-size: 13px; min-height: 48px; }
+.help-hero-description { font-size: 15px; line-height: 1.8; }
+html[data-density="comfortable"] .participant-card { padding-block: 28px; }
+html[data-density="comfortable"] .participant-name { font-size: 18px; }
+html[data-density="comfortable"] .note-preview { font-size: 15px; }
+:is(button, a, input, summary):focus-visible { outline: 3px solid var(--ui-accent); outline-offset: 3px; }
+@media (max-width: 1000px) {
+  .team-appbar > div { column-gap: 12px; }
+  .portal-appbar > div > div:nth-child(2) { display: none; }
+}
+@media (max-width: 800px) {
+  .team-appbar > div { min-height: 64px; padding-block: 8px; }
+  .portal-appbar nav { max-width: none; }
+  .team-main { padding: 24px 16px; }
+  .note-sections { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .note-section-heading, html[data-density="comfortable"] .note-section-heading { min-height: 0; }
+  .rich-note-content, html[data-density="comfortable"] .rich-note-content { min-height: 120px; max-height: 240px; }
+  .rich-note-toolbar button, html[data-density="comfortable"] .rich-note-toolbar button { min-width: 44px; }
+  .home-hero { padding: 32px; }
+}
+@media (max-width: 540px) {
+  .portal-appbar > div { column-gap: 8px; }
+  .portal-appbar > div > a img { width: 88px; height: 32px; }
+  .portal-appbar > div > div:last-child { gap: 4px; }
+  .portal-appbar > div > div:last-child > .MuiButtonBase-root { min-width: 44px; padding-inline: 8px; }
+  .portal-appbar nav { padding: 4px; }
+  .portal-appbar nav .MuiButtonBase-root { min-height: 44px; }
+  .portal-appbar nav .MuiButtonBase-root > span:last-child { font-size: 11px; }
+  .team-main { padding: 24px 12px 12px; }
+  .team-workspace { gap: 20px; }
+  .team-hero { flex-direction: column; align-items: stretch; gap: 16px; }
+  .team-hero h1 { font-size: 28px; }
+  .hero-meta { font-size: 12px; margin-top: 8px; gap: 10px; }
+  .hero-actions { flex-direction: row; align-items: center; justify-content: space-between; max-width: none; margin: 0; }
+  .hero-actions .connection-indicator { font-size: 12px; text-align: left; }
+  .hero-actions .MuiButton-root { min-width: 44px; min-height: 44px; font-size: 13px; padding-inline: 12px; }
+  .hero-actions .MuiButton-startIcon { margin-right: 8px; }
+  .team-workspace section.MuiPaper-root { padding: 16px; border-radius: 16px; }
+  .team-workspace section.MuiPaper-root > header > h2 { font-size: 20px; }
+  .notes-completion { font-size: 12px; gap: 12px; }
+  .roster-toolbar { flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
+  .roster-toolbar > div { flex-basis: 100%; }
+  .roster-toolbar .MuiOutlinedInput-root { font-size: 16px; }
+  .roster-count { font-size: 12px; }
+  .participant-card, html[data-density="comfortable"] .participant-card {
+    grid-template-columns: 36px minmax(0, 1fr) 44px; gap: 10px;
+    padding: 20px 0; border-radius: 0;
+  }
+  .participant-avatar .MuiAvatar-root { width: 36px; height: 36px; font-size: 12px; border-radius: 11px; }
+  .favorite-toggle.MuiIconButton-root { grid-column: 3; }
+  .participant-name, html[data-density="comfortable"] .participant-name { font-size: 16px; }
+  .participant-status, html[data-density="comfortable"] .participant-status { font-size: 12px; }
+  .participant-action.MuiButton-root { grid-column: 2 / -1; grid-row: 2; justify-self: start; font-size: 13px; min-height: 44px; padding-inline: 14px; }
+  .participant-action.MuiButton-root .MuiButton-startIcon { margin-right: 8px; }
+  .expanded-note { grid-template-columns: minmax(0, 1fr); padding: 16px; gap: 20px; }
+  .note-updated { font-size: 11px; line-height: 1.7; }
+  .note-modal .MuiDialog-paper { width: 100%; max-height: 100dvh; height: 100dvh; margin: 0; border-radius: 0; }
+  .note-modal-header { padding: 12px 16px; gap: 10px; }
+  .note-modal-header h2 { font-size: 19px; }
+  .note-modal-symbol { display: none; }
+  .note-modal-content.MuiDialogContent-root { padding: 20px 16px; }
+  .note-modal-person { flex-wrap: wrap; }
+  .note-modal-count { font-size: 11px; }
+  .note-modal-footer { flex-wrap: wrap; padding: 12px 16px max(12px, env(safe-area-inset-bottom)); gap: 8px; }
+  .note-modal-tools { width: 100%; flex: auto; justify-content: space-between; }
+  .note-modal-tools .MuiButton-root { min-width: 44px; font-size: 12px; padding-inline: 8px; }
+  .note-modal-tools .MuiButton-startIcon { margin-right: 6px; }
+  .note-modal-footer > .MuiButton-root { width: 100%; font-size: 14px; min-height: 48px; }
+  .home-hero { padding: 28px 24px; border-radius: 20px; }
+  .home-hero h1 { font-size: 40px; }
+  .home-hero-description { font-size: 18px; }
+  .home-hero-intro { font-size: 14px; }
+  .home-values { font-size: 12px; }
+  .home-join, .home-feature-card, .home-guide-banner { padding: 24px; }
+  .home-access-note { padding: 20px; }
+  .help-hero-description { font-size: 14px; }
+  .portal-footer { font-size: 11px; gap: 8px; }
+}

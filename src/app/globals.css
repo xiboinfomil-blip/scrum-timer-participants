@@ -472,6 +472,25 @@
   .team-main { max-width: 1120px; padding-top: 28px; padding-bottom: 12px; }
   .portal-footer { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; max-width: 1120px; padding-block: 20px; font-size: 10px; }
   .team-workspace { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  .favorite-toggle.MuiIconButton-root { color: #8394a7; width: 32px; height: 36px; border-radius: 7px; flex-shrink: 0; }
+  .favorite-toggle.MuiIconButton-root[aria-pressed="true"] { color: #205f9d; background: #edf4fb; }
+  .favorite-toggle[aria-pressed="true"] svg { fill: #205f9d20; }
+  .connection-indicator { display: inline-flex; align-items: center; gap: 6px; font-size: 10px; color: #52677d; }
+  .connection-indicator > span { width: 6px; height: 6px; border-radius: 50%; background: #147d52; }
+  .connection-indicator[data-state="Connexion indisponible"] > span, .connection-indicator[data-state="Enregistrement à vérifier"] > span { background: #b94b43; }
+  .connection-indicator[data-state="Enregistrement…"] > span, .connection-indicator[data-state="Actualisation…"] > span { background: #d18122; }
+  .note-expand-toggle { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; color: #205f9d; min-height: 30px; border-radius: 4px; }
+  .note-expand-toggle[aria-expanded="true"] svg { transform: rotate(180deg); }
+  .note-updated { display: block; color: #65798d; font-size: 10px; margin-top: 5px; }
+  .participant-card.is-expanded { flex-wrap: wrap; }
+  .expanded-note { flex: 1 0 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; padding: 14px; border: 1px solid #e3ebf4; border-radius: 8px; background: #f8fafd; }
+  .expanded-note > section { min-width: 0; }
+  .expanded-note h3 { font-size: 11px; font-weight: 650; margin-bottom: 8px; color: #205f9d; }
+  .expanded-note .note-rich-text { font-size: 12px; line-height: 1.7; }
+  .note-section-empty { font-size: 11px; color: #65798d; }
+  .note-format-help kbd { font-family: inherit; font-size: inherit; border: 1px solid #dce6f1; border-radius: 4px; padding: 1px 4px; }
+  .note-section-heading { min-height: 45px; }
+  .notes-overview { justify-content: flex-end; }
   .workspace-breadcrumb { font-size: 10px; gap: 8px; }
   .workspace-breadcrumb > span:nth-child(2), .workspace-breadcrumb > span:nth-child(3) { display: none; }
   .workspace-breadcrumb .workspace-live { display: flex; }
@@ -618,6 +637,18 @@
     .rich-note-content { min-height: 90px; max-height: 200px; }
   }
   @media (max-width: 540px) {
+    .portal-appbar > div { column-gap: 4px; }
+    .portal-appbar > div > div:last-child { gap: 0; }
+    .portal-appbar > div > div:nth-child(2) { font-size: 10px; }
+    .portal-appbar > div > a { padding-right: 0; }
+    .portal-appbar > div > a img { width: 68px; }
+    .portal-appbar > div > div:last-child > .MuiButtonBase-root { min-width: 34px; padding-inline: 4px; }
+    .hero-actions { flex-direction: column; align-items: flex-end; gap: 8px; max-width: 115px; }
+    .hero-actions .connection-indicator { display: inline-flex; font-size: 9px; text-align: right; }
+    .favorite-toggle.MuiIconButton-root { width: 26px; min-width: 26px; height: 38px; padding: 5px; }
+    .expanded-note { grid-template-columns: minmax(0, 1fr); gap: 14px; padding: 12px; }
+    .note-updated { font-size: 9px; }
+    .participant-card.is-expanded .participant-copy { flex-basis: 60px; }
     .team-main { padding: 16px 12px 8px; }
     .team-workspace { gap: 14px; }
     .team-hero { flex-direction: row; gap: 10px; padding: 0 0 16px; align-items: flex-start; }

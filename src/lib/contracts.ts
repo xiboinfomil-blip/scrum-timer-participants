@@ -42,6 +42,10 @@ export function parseNotes(value: unknown): Notes {
   const hints: Hint[] = unique(array(v.hints, 100).map(item => {
     const h = record(item);
     const { participantId, hint, revision } = validateNote({ participantId: h.participantId, hint: h.hint, revision: h.revision, day });
+    if (h.updatedAt !== undefined && h.updatedAt !== null) {
+      if (typeof h.updatedAt !== 'string' || !/^\d{4}-\d{2}-\d{2}T.*(?:Z|[+-]\d{2}:\d{2})$/.test(h.updatedAt) || !Number.isFinite(Date.parse(h.updatedAt))) throw new Error('Horodatage de note invalide.');
+      return { participantId, hint, revision, updatedAt: new Date(h.updatedAt).toISOString() };
+    }
     return { participantId, hint, revision };
   }), h => h.participantId);
   return { day, hints };

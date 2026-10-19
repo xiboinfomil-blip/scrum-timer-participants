@@ -1,6 +1,6 @@
-export type Hint = { participantId: string; hint: string; revision: number };
+export type Hint = { participantId: string; hint: string; revision: number; updatedAt?: string };
 export type Notes = { day: string; hints: Hint[] };
-export type NoteInput = Hint & { day: string };
+export type NoteInput = Pick<Hint, 'participantId' | 'hint' | 'revision'> & { day: string };
 export type Person = {
   id: string; name: string; mood: 1 | 2 | 3 | 4 | null;
   speakingSeconds: number; budgetSeconds: number; timeUp: boolean;

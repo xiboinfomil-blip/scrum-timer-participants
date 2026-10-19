@@ -33,6 +33,17 @@ export function RichNoteEditor({ ref, value, onChange, disabled, invalid, id = '
     contentType: 'markdown',
     editable: !disabled,
     editorProps: {
+      handleKeyDown: (_view, event) => {
+        if ((event.ctrlKey || event.metaKey) && event.key === 'Enter' && !event.isComposing) {
+          event.preventDefault();
+          event.stopPropagation();
+          const form = (event.target as HTMLElement).closest('form');
+          const submit = form?.querySelector<HTMLButtonElement>('button[type="submit"]');
+          if (submit && !submit.disabled && !event.repeat) form?.requestSubmit();
+          return true;
+        }
+        return false;
+      },
       attributes: {
         id, role: 'textbox', 'aria-multiline': 'true',
         'aria-labelledby': `${id}-label`, 'aria-describedby': 'note-help note-format-help note-count',
@@ -45,9 +56,9 @@ export function RichNoteEditor({ ref, value, onChange, disabled, invalid, id = '
       lastValue.current = markdownValue(editor);
       onChange(lastValue.current);
     },
-    onCreate: ({ editor }) => { if (autoFocus) editor.commands.focus('end', { scrollIntoView: false }); },
+    onCreate: ({ editor }) => { if (autoFocus) editor.view.dom.focus({ preventScroll: true }); },
   });
-  useImperativeHandle(ref, () => ({ focus: () => { editor?.commands.focus(undefined, { scrollIntoView: false }); } }), [editor]);
+  useImperativeHandle(ref, () => ({ focus: () => { editor?.view.dom.focus({ preventScroll: true }); } }), [editor]);
   useEffect(() => {
     if (editor && value !== lastValue.current) {
       lastValue.current = value;

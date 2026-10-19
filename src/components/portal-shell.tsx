@@ -3,10 +3,11 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { AppBar, ButtonBase, Chip, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { AppBar, ButtonBase, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import { ParticipantGuide } from './participant-guide';
 import { ActionButton } from './ui';
 import { PortalIcon } from './portal-icon';
+import { AppearanceControls } from './appearance-controls';
 
 type PortalView = 'notes' | 'statistics' | 'summary';
 const NavigationContext = createContext<{ tab: PortalView; setTab: (tab: PortalView) => void; openGuide: () => void } | null>(null);
@@ -38,7 +39,7 @@ export function PortalShell({ children }: { children: ReactNode }) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/infomil-logo.svg" alt="Infomil Mauritius" width={190} height={60} className="h-9 w-28 object-contain max-[800px]:h-7 max-[800px]:w-20" />
         </Link>
-        <div className="min-w-0 shrink text-sm font-semibold text-ink max-[420px]:text-xs">Espace participants<p className="mt-0.5 text-[10px] font-normal text-muted max-[800px]:hidden">Le daily, côté équipe</p></div>
+        <div className="min-w-0 shrink text-sm font-semibold text-ink max-[420px]:text-xs">Espace participants</div>
         {hasTeam && <nav aria-label="Vues de l’équipe" className="mx-auto min-w-0 max-w-150 flex-1 rounded-2xl border border-slate-200/70 bg-slate-50 p-1 max-[800px]:order-3 max-[800px]:max-w-none max-[800px]:basis-full">
           <div className="grid grid-cols-3 gap-1">{views.map(view => {
             const active = tab === view.id;
@@ -49,8 +50,8 @@ export function PortalShell({ children }: { children: ReactNode }) {
           })}</div>
         </nav>}
         <div className="ml-auto flex shrink-0 items-center gap-2">
+          <AppearanceControls />
           {hasTeam ? <ButtonBase aria-label="Guide d’utilisation" aria-haspopup="dialog" onClick={() => setGuideOpen(true)} className="flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-xl px-3 text-xs font-semibold text-muted hover:bg-blue-50 hover:text-brand max-[420px]:px-2"><PortalIcon name="help" className="size-5" /><span className="max-[420px]:sr-only">Guide</span></ButtonBase> : <ButtonBase component={Link} href="/help" aria-label="Guide d’utilisation" aria-current={pathname === '/help' ? 'page' : undefined} className={`flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-xl px-3 text-xs font-semibold max-[420px]:px-2 ${pathname === '/help' ? 'bg-blue-50 text-brand' : 'text-muted hover:bg-blue-50 hover:text-brand'}`}><PortalIcon name="help" className="size-5" /><span className="max-[420px]:sr-only">Guide</span></ButtonBase>}
-          <Chip size="small" variant="outlined" label="Accès partagé" className="shrink-0 border-line bg-blue-50 text-brand max-[1000px]:hidden" />
         </div>
       </div>
     </AppBar>

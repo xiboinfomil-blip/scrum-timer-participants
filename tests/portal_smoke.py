@@ -68,6 +68,11 @@ class MockAPI:
     def __init__(self, now):
         self.data = fixture(now)
         self.read_status = 200
+        self.write_status = 200
+        self.write_updated_at = None
+        self.write_gate = None
+        self.write_started = asyncio.Event()
+        self.token = TOKEN
         self.conflict_once = False
         self.gets = 0
         self.puts = []
@@ -77,9 +82,12 @@ class MockAPI:
         self.read_started = asyncio.Event()
         self.read_finished = asyncio.Event()
 
-    def note(self, text, revision, participant="person-01"):
+    def note(self, text, revision, participant="person-01", updated_at=None):
         self.data["hints"] = [h for h in self.data["hints"] if h["participantId"] != participant]
-        self.data["hints"].append({"participantId": participant, "hint": text, "revision": revision})
+        note = {"participantId": participant, "hint": text, "revision": revision}
+        if updated_at is not None:
+            note["updatedAt"] = updated_at
+        self.data["hints"].append(note)
 
     async def route(self, route):
         request = route.request
@@ -98,7 +106,7 @@ class MockAPI:
                 await route.continue_()
             return
         headers = await request.all_headers()
-        if headers.get("x-team-link") != TOKEN or url.query:
+        if headers.get("x-team-link") != self.token or url.query:
             self.violations.append("Invalid token header or unexpected API query")
         if request.method == "GET":
             self.gets += 1
@@ -135,6 +143,9 @@ class MockAPI:
             self.violations.append("PUT must be application/json")
         body = request.post_data_json
         self.puts.append(deepcopy(body))
+        self.write_started.set()
+        if self.write_gate is not None:
+            await self.write_gate.wait()
         if not isinstance(body, dict) or set(body) != {"participantId", "hint", "day", "revision"}:
             self.violations.append("PUT body keys differ from strict contract")
             await route.fulfill(status=400, json={"error": "INVALID_REQUEST"})
@@ -156,8 +167,10 @@ class MockAPI:
             self.conflict_once = False
             self.note("Version concurrente du serveur", body["revision"] + 1, body["participantId"])
             await route.fulfill(status=409, json={"error": "CONFLICT"})
+        elif self.write_status != 200:
+            await route.fulfill(status=self.write_status, json={"error": "UPSTREAM_UNAVAILABLE"})
         else:
-            self.note(body["hint"], body["revision"] + 1, body["participantId"])
+            self.note(body["hint"], body["revision"] + 1, body["participantId"], updated_at=self.write_updated_at)
             await route.fulfill(json={"day": self.data["day"], "hints": deepcopy(self.data["hints"])})
 
 
@@ -216,8 +229,18 @@ async def main_flow(page, api):
     assert not api.puts
     api.initial_gate.set()
     await loaded(page)
-    await expect(page.get_by_text("40 participants", exact=True)).to_be_visible()
-    await expect(page.get_by_text(f"{api.data['day']} · Maurice", exact=True)).to_be_visible()
+    await expect(page.get_by_role("region", name="Équipe smoke · 40", exact=True).get_by_text("40 participants", exact=True)).to_be_visible()
+    await expect(page.get_by_title(f"{api.data['day']} · Maurice", exact=True)).to_be_visible()
+    for control in await page.locator('.favorite-toggle, .participant-action').all():
+        bounds = await control.bounding_box()
+        assert bounds and bounds['width'] >= 44 and bounds['height'] >= 44, 'Participant actions need touch-friendly targets'
+    search = page.get_by_role('searchbox', name='Rechercher un participant')
+    await search.fill('Participant 09')
+    await expect(notes_panel(page).locator('ul > li')).to_have_count(1)
+    await page.get_by_role('button', name='Effacer la recherche', exact=True).click()
+    await expect(search).to_have_value('')
+    await expect(search).to_be_focused()
+    await expect(notes_panel(page).locator('ul > li')).to_have_count(8)
     navigation = page.get_by_role("banner").get_by_role("navigation", name="Vues de l’équipe", exact=True)
     await expect(navigation.get_by_role("button", name="Notes du jour", exact=True)).to_have_attribute("aria-pressed", "true")
     await expect(page.get_by_role("img", name="Infomil Mauritius", exact=True)).to_be_visible()
@@ -335,9 +358,13 @@ async def modal_flow(page, api):
     page.once("dialog", lambda dialog: dialog.dismiss())
     await page.keyboard.press("Escape")
     await expect(editor(page).get_by_role("textbox").first).to_have_text(draft, use_inner_text=True)
-    page.once("dialog", lambda dialog: dialog.dismiss())
-    await page.locator(".note-modal .MuiDialog-container").click(position={"x": 2, "y": 2}, force=True)
-    await expect(editor(page).get_by_role("textbox").first).to_have_text(draft, use_inner_text=True)
+    if page.viewport_size['width'] > 540:
+        page.once("dialog", lambda dialog: dialog.dismiss())
+        await page.locator(".note-modal .MuiDialog-container").click(position={"x": 2, "y": 2}, force=True)
+        await expect(editor(page).get_by_role("textbox").first).to_have_text(draft, use_inner_text=True)
+    else:
+        bounds = await editor(page).bounding_box()
+        assert bounds and bounds['width'] == page.viewport_size['width'], 'Mobile editor should use the full screen'
     await editor(page).get_by_role("textbox").first.fill("x" * 601)
     await expect(editor(page).get_by_role("button", name="Enregistrer la note", exact=True)).to_be_disabled()
     await expect(editor(page).get_by_role("textbox").first).to_have_attribute("aria-invalid", "true")
@@ -468,6 +495,222 @@ async def three_section_flow(page, api):
     assert len(api.puts) == 4, "Discarding an empty draft must not write"
 
 
+async def favorites_flow(page, api):
+    await page.goto(PORTAL, wait_until="domcontentloaded")
+    await loaded(page)
+    panel = notes_panel(page)
+    cards = panel.locator("li.participant-card")
+    search = page.get_by_role("searchbox", name="Rechercher un participant", exact=True)
+    pager = page.get_by_role("navigation", name="Participants", exact=True)
+    pin = page.get_by_role("button", name="Épingler Participant 09 aux favoris", exact=True)
+    unpin = page.get_by_role("button", name="Retirer Participant 09 des favoris", exact=True)
+    key = f"portal-favorites:{TEAM_ID}"
+
+    await search.fill("Participant 09")
+    await expect(cards).to_have_count(1)
+    await expect(pin).to_have_attribute("aria-pressed", "false")
+    # Find via search first, then pin from page two to exercise the page reset.
+    await search.fill("")
+    await pager.get_by_role("button", name="Suivant", exact=True).click()
+    await expect(pager.get_by_text("2 / 5", exact=True)).to_be_visible()
+    await pin.click()
+    await expect(pager.get_by_text("1 / 5", exact=True)).to_be_visible()
+    await expect(cards.first.locator(".participant-name")).to_have_text("Participant 09")
+    await expect(unpin).to_have_attribute("aria-pressed", "true")
+    assert json.loads(await page.evaluate("key => localStorage.getItem(key)", key)) == ["person-09"]
+    await page.reload(wait_until="domcontentloaded")
+    await loaded(page)
+    await expect(unpin).to_have_attribute("aria-pressed", "true")
+    await expect(cards.first.locator(".participant-name")).to_have_text("Participant 09")
+
+    # Same origin and participant IDs, but a distinct team capability/storage scope.
+    other_id = "b" * 64
+    other_token = b64url(json.dumps({"v": 1, "teamId": other_id}, separators=(",", ":")).encode()) + "." + b64url(bytes(32))
+    api.data["team"]["id"] = other_id
+    api.token = other_token
+    await page.goto(f"{BASE}/t/{other_token}", wait_until="domcontentloaded")
+    await loaded(page)
+    await expect(cards.first.locator(".participant-name")).to_have_text("Élodie Martin")
+    await search.fill("Participant 09")
+    await expect(pin).to_have_attribute("aria-pressed", "false")
+    assert await page.evaluate("key => localStorage.getItem(key)", f"portal-favorites:{other_id}") is None
+    api.data["team"]["id"] = TEAM_ID
+    api.token = TOKEN
+    await page.goto(PORTAL, wait_until="domcontentloaded")
+    await loaded(page)
+    await expect(unpin).to_have_attribute("aria-pressed", "true")
+    await unpin.click()
+    await expect(cards.first.locator(".participant-name")).to_have_text("Élodie Martin")
+    assert json.loads(await page.evaluate("key => localStorage.getItem(key)", key)) == []
+    await page.reload(wait_until="domcontentloaded")
+    await loaded(page)
+    await search.fill("Participant 09")
+    await expect(pin).to_have_attribute("aria-pressed", "false")
+    await layout(page)
+    assert not api.puts, "Favorites must never write team data"
+
+
+async def inline_note_flow(page, api):
+    timestamp = "2026-10-18T08:34:56.000Z"
+    api.note("**Récemment**\n\nDémo **préparée**\n\n**Maintenant**\n\n- Partager les avancées\n\n**Ensuite**\n\nVérifier *les retours*", 1, updated_at=timestamp)
+    api.note("Une note sans horodatage serveur", 1, "person-03")
+    await page.goto(PORTAL, wait_until="domcontentloaded")
+    await loaded(page)
+    card = notes_panel(page).locator("li.participant-card").filter(has=page.get_by_text("Élodie Martin", exact=True))
+    await expect(card.locator("time")).to_have_attribute("datetime", timestamp)
+    await expect(card.locator("time")).to_contain_text("Maurice")
+    undated = notes_panel(page).locator("li.participant-card").filter(has=page.get_by_text("Participant 03", exact=True))
+    await expect(undated.locator("time")).to_have_count(0)
+    toggle = card.get_by_role("button", name="Développer la note de Élodie Martin", exact=True)
+    await expect(toggle).to_have_attribute("aria-expanded", "false")
+    await toggle.click()
+    collapse = card.get_by_role("button", name="Réduire la note de Élodie Martin", exact=True)
+    await expect(collapse).to_have_attribute("aria-expanded", "true")
+    expanded = card.locator(".expanded-note")
+    await expect(expanded).to_be_visible()
+    assert await collapse.get_attribute("aria-controls") == await expanded.get_attribute("id")
+    await expect(expanded.locator("section")).to_have_count(3)
+    for heading, text in (("Récemment", "Démo préparée"), ("Maintenant", "Partager les avancées"), ("Ensuite", "Vérifier les retours")):
+        section = expanded.get_by_role("region", name=heading, exact=True)
+        await expect(section.get_by_role("heading", name=heading, exact=True)).to_be_visible()
+        await expect(section).to_contain_text(text)
+    await expect(expanded.locator("strong")).to_have_text("préparée")
+    await expect(expanded.locator("ul li")).to_have_text("Partager les avancées")
+    await expect(expanded.locator("em")).to_have_text("les retours")
+    await expect(page.get_by_role("dialog")).to_have_count(0)
+    await layout(page)
+    await collapse.click()
+    await expect(toggle).to_have_attribute("aria-expanded", "false")
+    await expect(expanded).to_be_hidden()
+    await expect(card.locator(".note-preview")).to_be_visible()
+    assert not api.puts, "Reading or collapsing a note must not save"
+
+    # Ordinary legacy writes omit updatedAt; only timestamp tests opt in.
+    api.write_updated_at = "2026-10-19T09:15:00.000Z"
+    await open_editor(page)
+    await editor(page).get_by_role("textbox").first.fill("Démo mise à jour")
+    await editor(page).get_by_role("button", name="Enregistrer la note", exact=True).click()
+    await expect(editor(page).get_by_role("status")).to_have_text("Note enregistrée et partagée avec l’équipe.")
+    await editor(page).get_by_role("button", name="Fermer", exact=True).click()
+    await expect(card.locator("time")).to_have_attribute("datetime", api.write_updated_at)
+    await page.reload(wait_until="domcontentloaded")
+    await loaded(page)
+    await expect(card.locator("time")).to_have_attribute("datetime", api.write_updated_at)
+    await expect(undated.locator("time")).to_have_count(0)
+    assert len(api.puts) == 1
+
+
+async def appearance_flow(page, api):
+    await page.goto(PORTAL, wait_until="domcontentloaded")
+    await loaded(page)
+    for theme_label, theme, density_label, density in (("Sombre", "dark", "Confortable", "comfortable"), ("Clair", "light", "Compacte", "compact")):
+        for label in (theme_label, density_label):
+            await page.get_by_role("button", name="Apparence", exact=True).click()
+            await page.get_by_role("menuitemradio", name=label, exact=True).click()
+        await expect(page.locator("html")).to_have_attribute("data-theme", theme)
+        await expect(page.locator("html")).to_have_attribute("data-density", density)
+        await layout(page)
+        await open_editor(page)
+        await layout(page)
+        await expect(editor(page).get_by_role("button", name="Enregistrer la note", exact=True)).to_be_visible()
+        await editor(page).get_by_role("button", name="Fermer", exact=True).click()
+        await page.reload(wait_until="domcontentloaded")
+        await loaded(page)
+        await expect(page.locator("html")).to_have_attribute("data-theme", theme)
+        await expect(page.locator("html")).to_have_attribute("data-density", density)
+        assert json.loads(await page.evaluate("() => localStorage.getItem('scrum-participants-appearance')")) == {"theme": theme, "density": density}
+        for label in (theme_label, density_label):
+            await page.get_by_role("button", name="Apparence", exact=True).click()
+            await expect(page.get_by_role("menuitemradio", name=label, exact=True)).to_have_attribute("aria-checked", "true")
+            await page.keyboard.press("Escape")
+        await layout(page)
+    assert not api.puts, "Appearance is a local preference, not a team write"
+
+
+async def keyboard_connection_flow(page, api):
+    await page.goto(PORTAL, wait_until="domcontentloaded")
+    await loaded(page)
+    connection = page.locator(".connection-indicator")
+    await expect(connection).to_have_text("À jour")
+    await page.context.set_offline(True)
+    await page.evaluate("() => window.dispatchEvent(new Event('offline'))")
+    await expect(connection).to_have_text("Connexion indisponible")
+    await page.context.set_offline(False)
+    await page.evaluate("() => window.dispatchEvent(new Event('online'))")
+    await expect(connection).to_have_text("À jour")
+    await open_editor(page)
+    box = editor(page)
+    field = box.get_by_role("textbox").first
+    save = box.get_by_role("button", name="Enregistrer la note", exact=True)
+    hint = box.locator("#note-format-help")
+    await expect(hint).to_be_visible()
+    await expect(hint).to_contain_text("Ctrl / ⌘ + Entrée")
+
+    for value in ("", "x" * 601):
+        await field.fill(value)
+        await expect(save).to_be_disabled()
+        for shortcut in ("Control+Enter", "Meta+Enter"):
+            await field.press(shortcut)
+        assert not api.puts, "Invalid keyboard submissions must not write"
+
+    for index, shortcut in enumerate(("Control+Enter", "Meta+Enter"), start=1):
+        draft = f"Raccourci enregistré {index}"
+        await field.fill(draft)
+        await expect(save).to_be_enabled()
+        api.write_started.clear()
+        gate = asyncio.Event()
+        api.write_gate = gate
+        try:
+            await field.press(shortcut)
+            await asyncio.wait_for(api.write_started.wait(), 10)
+            await expect(connection).to_have_text("Enregistrement…")
+            assert len(api.puts) == index, "Each shortcut must submit exactly once"
+            gate.set()
+            await expect(box.get_by_role("status")).to_have_text("Note enregistrée et partagée avec l’équipe.")
+            await expect(connection).to_have_text("Enregistré")
+            await expect(save).to_be_disabled()
+            await field.press(shortcut)
+            assert len(api.puts) == index, "Unchanged notes must not be submitted again"
+            assert api.puts[-1] == {"participantId": "person-01", "hint": f"**Récemment**\n\n{draft}", "day": api.data["day"], "revision": index - 1}
+        finally:
+            gate.set()
+            api.write_gate = None
+    # A remote revision disables both shortcuts without attempting a write.
+    await field.fill("Brouillon en conflit")
+    api.note("Modification distante", 3)
+    await box.get_by_role("button", name="Actualiser", exact=True).click()
+    await expect(save).to_be_disabled()
+    await expect(box.get_by_role("button", name="Recharger pour comparer", exact=True)).to_be_visible()
+    for shortcut in ("Control+Enter", "Meta+Enter"):
+        await field.press(shortcut)
+    assert len(api.puts) == 2, "Conflicting shortcuts must not write"
+    await layout(page)
+
+
+async def failed_write_flow(page, api):
+    await page.goto(PORTAL, wait_until="domcontentloaded")
+    await loaded(page)
+    await open_editor(page)
+    box = editor(page)
+    draft = "Brouillon dont l’enregistrement reste incertain"
+    await box.get_by_role("textbox").first.fill(draft)
+    api.write_status = 502
+    await box.get_by_role("button", name="Enregistrer la note", exact=True).click()
+    connection = page.locator(".connection-indicator")
+    await expect(connection).to_have_text("Enregistrement à vérifier")
+    await expect(box.get_by_text("Note enregistrée et partagée avec l’équipe.", exact=True)).to_have_count(0)
+    await expect(box.get_by_role("button", name="Enregistrer la note", exact=True)).to_be_disabled()
+    await box.get_by_role("button", name="Recharger pour comparer", exact=True).click()
+    await expect(box.get_by_text(re.compile(r"Version serveur .*révision 0$"))).to_be_visible()
+    await expect(connection).to_have_text("Enregistrement à vérifier")
+    await expect(box.get_by_role("textbox").first).to_have_text(draft, use_inner_text=True)
+    for shortcut in ("Control+Enter", "Meta+Enter"):
+        await box.get_by_role("textbox").first.press(shortcut)
+    await expect(box.get_by_text("Note enregistrée et partagée avec l’équipe.", exact=True)).to_have_count(0)
+    assert len(api.puts) == 1 and not api.data["hints"], "Failed saves and refresh must not commit or retry"
+    await layout(page)
+
+
 async def no_midnight_refresh_flow(page, api):
     api.note("Le serveur gère le nettoyage", 1)
     await page.goto(PORTAL, wait_until="domcontentloaded")
@@ -562,6 +805,20 @@ async def guide_flow(page, api):
     assert api.gets == 0 and not api.puts, "Guide must not request team data"
 
 
+def assert_preference_storage(entries):
+    for key, value in entries:
+        if key == "scrum-participants-appearance":
+            preference = json.loads(value)
+            assert isinstance(preference, dict) and set(preference) == {"theme", "density"}
+            assert preference["theme"] in ("light", "dark")
+            assert preference["density"] in ("compact", "comfortable")
+        else:
+            assert re.fullmatch(r"portal-favorites:[ab]{64}", key), f"Non-preference storage key: {key}"
+            ids = json.loads(value)
+            assert isinstance(ids, list) and all(isinstance(item, str) and re.fullmatch(r"person-\d{2}", item) for item in ids), "Favorites may store participant IDs only"
+        assert TOKEN not in value and '"hint"' not in value, "Notes/capabilities must never be persisted"
+
+
 async def run_case(browser, viewport, motion, case):
     # Each case has fresh cookies, storage, document, mocks and in-memory state.
     context = await browser.new_context(viewport=viewport, reduced_motion=motion,
@@ -570,6 +827,18 @@ async def run_case(browser, viewport, motion, case):
     now = datetime.now(timezone.utc)
     api = MockAPI(now)
     errors = []
+    storage_writes = []
+    await context.expose_binding("recordPreferenceWrite", lambda source, key, value: storage_writes.append((key, value)))
+    await context.add_init_script("""(() => {
+        const original = Storage.prototype.setItem;
+        window.preferenceWriteChecks = [];
+        Storage.prototype.setItem = function(key, value) {
+            if (this === window.localStorage) {
+                window.preferenceWriteChecks.push(window.recordPreferenceWrite(String(key), String(value)));
+            }
+            return original.call(this, key, value);
+        };
+    })();""")
     await context.route("**/*", api.route)
     page = await context.new_page()
     page.set_default_timeout(15000)
@@ -590,6 +859,16 @@ async def run_case(browser, viewport, motion, case):
             await rich_text_flow(page, api)
         elif case == "three-section":
             await three_section_flow(page, api)
+        elif case == "favorites":
+            await favorites_flow(page, api)
+        elif case == "inline-note":
+            await inline_note_flow(page, api)
+        elif case == "appearance":
+            await appearance_flow(page, api)
+        elif case == "keyboard-connection":
+            await keyboard_connection_flow(page, api)
+        elif case == "failed-write":
+            await failed_write_flow(page, api)
         elif case == "no-midnight-refresh":
             await no_midnight_refresh_flow(page, api)
         elif case == "stale-read":
@@ -599,12 +878,18 @@ async def run_case(browser, viewport, motion, case):
         assert not api.violations, api.violations
         assert not errors, errors
         assert await context.cookies() == [], "Portal must not create cookies"
+        await page.evaluate("() => Promise.all(window.preferenceWriteChecks)")
+        assert_preference_storage(storage_writes)
+        assert_preference_storage(await page.evaluate("() => Object.entries(localStorage)"))
+        assert await page.evaluate("() => sessionStorage.length") == 0, "Notes/capabilities must not be stored in sessionStorage"
         print(f"PASS {viewport['width']}x{viewport['height']} {motion} {case}")
     finally:
         if api.initial_gate is not None:
             api.initial_gate.set()
         if api.read_gate is not None:
             api.read_gate.set()
+        if api.write_gate is not None:
+            api.write_gate.set()
         await context.close()
 
 
@@ -615,7 +900,7 @@ async def main():
         try:
             for viewport in ({"width": 1366, "height": 768}, {"width": 320, "height": 568}):
                 for motion in motions:
-                    for case in ("main", "401", "502", "stale-read", "guide", "home", "modal", "rich-text", "three-section", "no-midnight-refresh"):
+                    for case in ("main", "401", "502", "stale-read", "guide", "home", "modal", "rich-text", "three-section", "no-midnight-refresh", "favorites", "inline-note", "appearance", "keyboard-connection", "failed-write"):
                         await run_case(browser, viewport, motion, case)
         finally:
             await browser.close()

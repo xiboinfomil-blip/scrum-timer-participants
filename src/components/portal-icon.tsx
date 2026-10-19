@@ -1,6 +1,8 @@
 import type { SVGProps } from 'react';
 
 const paths = {
+  pin: 'M9 3h6l-1 6 4 4v2h-5v6l-2-3v-3H6v-2l4-4-1-6',
+  chevron: 'M6 9l6 6 6-6',
   close: 'M6 6l12 12M6 18L18 6',
   search: 'M21 21l-4.4-4.4M19 10.5a8.5 8.5 0 1 1-17 0 8.5 8.5 0 0 1 17 0',
   arrow: 'M5 12h14M12 5l7 7-7 7',

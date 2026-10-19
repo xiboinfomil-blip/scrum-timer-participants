@@ -24,6 +24,8 @@ export function useTeam(token: string) {
   const [error, setError] = useState<PortalError | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [writeStatus, setWriteStatus] = useState<'idle' | 'saved' | 'uncertain'>('idle');
+  const [online, setOnline] = useState(true);
   const [now, setNow] = useState(() => new Date());
   const generation = useRef(0), readController = useRef<AbortController | null>(null);
   const writeController = useRef<AbortController | null>(null), writing = useRef(false), mounted = useRef(false);
@@ -62,8 +64,13 @@ export function useTeam(token: string) {
       })));
       if (notes.day !== input.day) throw new PortalError(409, 'La journée a changé. Rechargez puis vérifiez votre brouillon.');
       if (!mounted.current || id !== generation.current) throw new Error('STALE_WRITE');
-      setData(previous => previous ? { ...previous, ...notes } : previous); setError(null); setNow(new Date());
+      const saved = notes.hints.find(note => note.participantId === input.participantId);
+      if (!saved || saved.hint !== input.hint || saved.revision <= input.revision) throw new Error('Enregistrement non confirmé. Rechargez pour comparer.');
+      setData(previous => previous ? { ...previous, ...notes } : previous); setError(null); setNow(new Date()); setWriteStatus('saved');
       return notes;
+    } catch (e) {
+      if (mounted.current) setWriteStatus('uncertain');
+      throw e;
     } finally {
       clearTimeout(timeout); writing.current = false; writeController.current = null;
       if (mounted.current) setSaving(false);
@@ -71,7 +78,10 @@ export function useTeam(token: string) {
   }, [token]);
   useEffect(() => {
     mounted.current = true;
-    const initial = setTimeout(() => void refresh(), 0);
+    const connection = () => setOnline(navigator.onLine);
+    window.addEventListener('online', connection);
+    window.addEventListener('offline', connection);
+    const initial = setTimeout(() => { connection(); void refresh(); }, 0);
     const visible = () => { if (document.visibilityState === 'visible') { setNow(new Date()); void refresh(); } };
     document.addEventListener('visibilitychange', visible);
     return () => {
@@ -80,7 +90,9 @@ export function useTeam(token: string) {
       // eslint-disable-next-line react-hooks/exhaustive-deps
       ++generation.current;
       readController.current?.abort(); writeController.current?.abort(); clearTimeout(initial); document.removeEventListener('visibilitychange', visible);
+      window.removeEventListener('online', connection); window.removeEventListener('offline', connection);
     };
   }, [refresh]);
-  return { data, error, loading, saving, refresh, save, now, day: mauritiusDay(now) };
+  const connectionStatus = !online || error ? 'Connexion indisponible' : saving ? 'Enregistrement…' : writeStatus === 'uncertain' ? 'Enregistrement à vérifier' : loading ? 'Actualisation…' : writeStatus === 'saved' ? 'Enregistré' : 'À jour';
+  return { data, error, loading, saving, refresh, save, now, day: mauritiusDay(now), connectionStatus };
 }

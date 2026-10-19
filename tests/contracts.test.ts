@@ -30,3 +30,11 @@ test('réponses serveur filtrées et validées, doublons et notes hors équipe r
   assert.throws(() => parseNotes({ day: input.day, hints: [...data.hints, ...data.hints] }));
   assert.throws(() => parsePortal({ ...data, history: [{ id: 'r', completedAt: 'yesterday', people: [] }] }));
 });
+test('optional server note timestamps are validated and never part of writes', () => {
+  const hint = { participantId: 'alice', hint: 'Point du jour', revision: 1 };
+  assert.deepEqual(parseNotes({ day: input.day, hints: [hint] }).hints[0], hint);
+  assert.equal(parseNotes({ day: input.day, hints: [{ ...hint, updatedAt: '2026-10-16T14:00:00+04:00' }] }).hints[0].updatedAt, '2026-10-16T10:00:00.000Z');
+  assert.equal(parseNotes({ day: input.day, hints: [{ ...hint, updatedAt: null }] }).hints[0].updatedAt, undefined);
+  for (const updatedAt of ['yesterday', '2026-10-16', 123, '2026-13-99T10:00:00Z']) assert.throws(() => parseNotes({ day: input.day, hints: [{ ...hint, updatedAt }] }));
+  assert.throws(() => validateNote({ ...input, updatedAt: '2026-10-16T10:00:00Z' }));
+});
