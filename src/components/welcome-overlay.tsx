@@ -23,7 +23,7 @@ export function WelcomeOverlay() {
       }
     };
     document.addEventListener('keydown', keyboard);
-    const timer = window.setTimeout(() => setOpen(false), 5000);
+    const timer = window.setTimeout(() => setOpen(false), 2000);
     const preference = window.setTimeout(() => {
       try { if (localStorage.getItem('scrum-participants-intro') === 'hidden') setOpen(false); } catch { /* Storage may be blocked. */ }
     }, 0);
