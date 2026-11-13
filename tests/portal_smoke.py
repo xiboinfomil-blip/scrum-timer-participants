@@ -38,7 +38,7 @@ def b64url(value):
 
 # Syntactically valid per TOKEN_PATTERN, deliberately NOT an authentic capability.
 TOKEN = b64url(json.dumps({"v": 1, "teamId": TEAM_ID}, separators=(",", ":")).encode()) + "." + b64url(bytes(32))
-assert re.fullmatch(r"[A-Za-z0-9_-]{1,512}\.[A-Za-z0-9_-]{43}", TOKEN)
+assert re.fullmatch(r"[A-Za-z0-9_-]{1,468}\.[A-Za-z0-9_-]{43}", TOKEN)
 PORTAL = f"{BASE}/t/{TOKEN}"
 
 
@@ -204,7 +204,7 @@ async def loaded(page):
 
 
 async def layout(page):
-    assert await page.locator('svg:not(.MuiSvgIcon-root)').count() == 0, 'All interface icons must use Material Icons'
+    assert await page.locator('svg:not(.lucide)').count() == 0, 'All interface icons must use Lucide'
     assert await page.evaluate("""() => {
         const root = document.documentElement;
         return root.scrollWidth <= root.clientWidth + 1 &&

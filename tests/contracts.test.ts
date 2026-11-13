@@ -8,7 +8,8 @@ test('notes : contrat exact, Unicode, LF et limites', () => {
   assert.equal(characterCount('😀'), 1);
   assert.equal(characterCount(validateNote({ ...input, hint: '😀'.repeat(600) }).hint), 600);
   for (const hint of ['', ' \n ', 'a'.repeat(601), 'a\rb', 'a\r\nb', 'a\tb', 'a\0b', 'a\u0085b']) assert.throws(() => validateNote({ ...input, hint }));
-  for (const revision of [-1, 0.5, 2147483647, '0', null]) assert.throws(() => validateNote({ ...input, revision }));
+  for (const revision of [2147483647, 2147483648, Number.MAX_SAFE_INTEGER]) assert.equal(validateNote({ ...input, revision }).revision, revision);
+  for (const revision of [-1, 0.5, Number.MAX_SAFE_INTEGER + 1, Infinity, '0', null]) assert.throws(() => validateNote({ ...input, revision }));
   assert.throws(() => validateNote({ ...input, teamId: 'other' }));
   assert.throws(() => validateNote({ hint: 'a', day: input.day, revision: 0 }));
 });
@@ -19,6 +20,8 @@ test('dates et forme des liens : aucune vérification HMAC côté navigateur', (
   assert.equal(TEAM_PATTERN.test('A'.repeat(64)), false);
   assert.equal(TOKEN_PATTERN.test('eyJ2IjoxfQ.' + 'x'.repeat(43)), true);
   assert.equal(TOKEN_PATTERN.test('token/path.' + 'x'.repeat(43)), false);
+  assert.equal(TOKEN_PATTERN.test('a'.repeat(468) + '.' + 'x'.repeat(43)), true);
+  assert.equal(TOKEN_PATTERN.test('a'.repeat(469) + '.' + 'x'.repeat(43)), false);
 });
 test('réponses serveur filtrées et validées, doublons et notes hors équipe rejetés', () => {
   const data = { team: { id: 'a'.repeat(64), name: 'Équipe', roster: [{ id: 'alice', name: '<script>alert(1)</script>', present: false }] }, day: input.day, hints: [{ participantId: 'alice', hint: 'Note', revision: 1 }], history: [], privateSecret: 'must-not-forward' };

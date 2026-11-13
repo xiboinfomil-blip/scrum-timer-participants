@@ -24,23 +24,23 @@ body { background: var(--ui-canvas); }
 .personal-notes-heading h2 { margin: 8px 0; font-size: clamp(26px, 3vw, 34px); font-weight: 750; letter-spacing: -.045em; }
 .personal-notes-heading > div > p:last-child { font-size: 14px; color: var(--ui-muted); }
 .personal-notes-badge { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--ui-border); border-radius: 100px; padding: 10px 16px; font-size: 12px; background: var(--ui-surface); white-space: nowrap; }
-.team-workspace section.note-start.MuiPaper-root { display: flex; flex-direction: column; align-items: center; text-align: center; padding: clamp(32px, 6vw, 72px) 24px; border: 1px solid var(--ui-border); background: radial-gradient(ellipse at top, color-mix(in srgb, var(--ui-accent) 8%, var(--ui-surface)), var(--ui-surface) 65%); color: var(--ui-text); }
+.team-workspace section.note-start.ui-card { display: flex; flex-direction: column; align-items: center; text-align: center; padding: clamp(32px, 6vw, 72px) 24px; border: 1px solid var(--ui-border); background: radial-gradient(ellipse at top, color-mix(in srgb, var(--ui-accent) 8%, var(--ui-surface)), var(--ui-surface) 65%); color: var(--ui-text); }
 .note-start-symbol { display: grid; place-items: center; width: 72px; height: 72px; border-radius: 24px; margin-bottom: 28px; background: var(--ui-surface); color: var(--ui-accent); border: 1px solid var(--ui-border); box-shadow: 0 10px 24px #19375208; transform: rotate(-6deg); }
 .note-start-symbol svg { width: 30px; height: 30px; }
 .note-start h3 { font-size: clamp(23px, 3vw, 30px); line-height: 1.3; font-weight: 700; letter-spacing: -.035em; margin: 12px 0; }
 .note-start > p:not(.personal-notes-eyebrow) { max-width: 430px; font-size: 14px; line-height: 1.9; color: var(--ui-muted); }
-.note-start > .MuiButton-root { margin-top: 28px; min-height: 48px; padding-inline: 24px; border-radius: 12px; }
+.note-start > .ui-button { margin-top: 28px; min-height: 48px; padding-inline: 24px; border-radius: 12px; }
 .note-start > span { margin-top: 16px; font-size: 11px; color: var(--ui-muted); }
-.team-workspace section.personal-note.MuiPaper-root { overflow: hidden; padding: 0; border: 1px solid var(--ui-border); background: var(--ui-surface); color: var(--ui-text); }
+.team-workspace section.personal-note.ui-card { overflow: hidden; padding: 0; border: 1px solid var(--ui-border); background: var(--ui-surface); color: var(--ui-text); }
 .team-workspace section.personal-note > header.personal-note-person { display: flex; align-items: center; gap: 16px; padding: 24px 28px; margin: 0; background: var(--ui-soft); border-bottom: 1px solid var(--ui-border); }
-.personal-note-person .MuiAvatar-root { width: 56px; height: 56px; border-radius: 18px; font-size: 18px; background: var(--ui-accent); color: var(--ui-surface); }
+.personal-note-person .ui-avatar { width: 56px; height: 56px; border-radius: 18px; font-size: 18px; background: var(--ui-accent); color: var(--ui-surface); }
 .personal-note-person h3 { font-size: 21px; font-weight: 700; margin: 5px 0; overflow-wrap: anywhere; }
 .personal-note-person > div > p:last-child { font-size: 12px; color: var(--ui-muted); }
-.personal-note .MuiButton-root { min-height: 44px; border-radius: 10px; font-size: 12px; padding-inline: 16px; }
+.personal-note .ui-button { min-height: 44px; border-radius: 10px; font-size: 12px; padding-inline: 16px; }
 .personal-note-intro { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 32px 28px 24px; }
 .personal-note-intro h4 { font-size: 19px; font-weight: 700; letter-spacing: -.025em; }
 .personal-note-intro p { color: var(--ui-muted); font-size: 13px; line-height: 1.8; margin-top: 6px; }
-.personal-note-intro .MuiButton-root { flex-shrink: 0; }
+.personal-note-intro .ui-button { flex-shrink: 0; }
 .personal-note-sections { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 0 28px 32px; gap: 16px; }
 .personal-note-section { min-width: 0; padding: 22px; border: 1px solid var(--ui-border); border-radius: 16px; background: var(--ui-soft); border-top: 3px solid var(--ui-accent); }
 .personal-note-now { border-top-color: #33a78c; }
@@ -52,14 +52,14 @@ body { background: var(--ui-canvas); }
 .personal-note-footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; border-top: 1px solid var(--ui-border); padding: 18px 28px; font-size: 11px; color: var(--ui-muted); }
 .personal-note-footer > span { display: flex; align-items: center; gap: 8px; }
 .personal-notes-footnote { font-size: 12px; line-height: 1.9; color: var(--ui-muted); max-width: 660px; margin: 18px auto 0; text-align: center; }
-.person-choice-modal .MuiDialog-paper { border-radius: 22px; background: var(--ui-surface); color: var(--ui-text); }
-.person-choice-modal .MuiDialogTitle-root { font-size: 23px; font-weight: 700; letter-spacing: -.03em; padding: 28px 28px 12px; }
-.person-choice-modal .MuiDialogContent-root { padding: 8px 28px 20px; }
-.person-choice-modal .MuiDialogContent-root > p { font-size: 14px; line-height: 1.8; color: var(--ui-muted); margin-bottom: 24px; }
-.person-choice-modal .MuiOutlinedInput-root { min-height: 52px; border-radius: 12px; }
-.person-choice-modal .MuiDialogContent-root > p.person-choice-notice { margin: 16px 0 0; font-size: 12px; }
-.person-choice-modal .MuiDialogActions-root { padding: 20px 28px; border-top: 1px solid var(--ui-border); gap: 8px; }
-.person-choice-modal .MuiButton-root { min-height: 44px; border-radius: 10px; }
+.person-choice-modal.ui-dialog { border-radius: 22px; background: var(--ui-surface); color: var(--ui-text); }
+.person-choice-modal .ui-dialog-title { font-size: 23px; font-weight: 700; letter-spacing: -.03em; padding: 28px 28px 12px; }
+.person-choice-modal .ui-dialog-body { padding: 8px 28px 20px; }
+.person-choice-modal .ui-dialog-body > p { font-size: 14px; line-height: 1.8; color: var(--ui-muted); margin-bottom: 24px; }
+.person-choice-modal .ui-input { min-height: 52px; border-radius: 12px; }
+.person-choice-modal .ui-dialog-body > p.person-choice-notice { margin: 16px 0 0; font-size: 12px; }
+.person-choice-modal .ui-dialog-footer { padding: 20px 28px; border-top: 1px solid var(--ui-border); gap: 8px; }
+.person-choice-modal .ui-button { min-height: 44px; border-radius: 10px; }
 @media (max-width: 800px) {
   .personal-note-sections { grid-template-columns: minmax(0, 1fr); }
   .personal-note-placeholder { min-height: 0; }
@@ -68,22 +68,22 @@ body { background: var(--ui-canvas); }
   .personal-notes-heading { margin-top: 0; }
   .personal-notes-badge { display: none; }
   .team-workspace section.personal-note > header.personal-note-person { flex-wrap: wrap; padding: 20px; gap: 12px; }
-  .personal-note-person > .MuiButton-root { width: 100%; }
+  .personal-note-person > .ui-button { width: 100%; }
   .personal-note-person h3 { font-size: 19px; }
   .personal-note-intro { flex-direction: column; align-items: stretch; padding: 24px 20px; }
   .personal-note-sections { padding: 0 20px 24px; }
   .personal-note-footer { padding: 16px 20px; }
-  .person-choice-modal .MuiDialog-paper { margin: 16px; width: calc(100% - 32px); }
-  .person-choice-modal .MuiDialogTitle-root { padding: 24px 20px 12px; font-size: 21px; }
-  .person-choice-modal .MuiDialogContent-root { padding-inline: 20px; }
-  .person-choice-modal .MuiDialogActions-root { padding: 16px 20px; }
+  .person-choice-modal.ui-dialog { margin: 16px; width: calc(100% - 32px); }
+  .person-choice-modal .ui-dialog-title { padding: 24px 20px 12px; font-size: 21px; }
+  .person-choice-modal .ui-dialog-body { padding-inline: 20px; }
+  .person-choice-modal .ui-dialog-footer { padding: 16px 20px; }
 }
 .portal-appbar { background: var(--ui-surface); }
 .team-appbar > div { min-height: 80px; max-width: 1240px; gap: 20px; }
 .portal-appbar nav { max-width: 500px; border-radius: 14px; padding: 5px; }
-.portal-appbar nav .MuiButtonBase-root { min-height: 44px; border-radius: 10px; }
-.portal-appbar nav .MuiButtonBase-root > span:last-child { font-size: 13px; }
-.portal-appbar > div > div:last-child > .MuiButtonBase-root { min-width: 44px; min-height: 44px; }
+.portal-appbar nav .ui-button { min-height: 44px; border-radius: 10px; }
+.portal-appbar nav .ui-button > span:last-child { font-size: 13px; }
+.portal-appbar > div > div:last-child > .ui-button { min-width: 44px; min-height: 44px; }
 .team-main { max-width: 1200px; padding-block: 32px 24px; }
 .team-workspace { gap: 24px; }
 .team-hero { padding-bottom: 0; border-bottom: 0; }
@@ -91,19 +91,19 @@ body { background: var(--ui-canvas); }
 .hero-meta { margin-top: 10px; font-size: 13px; color: var(--ui-muted); gap: 10px 20px; }
 .hero-meta > span:last-child { display: inline-flex; }
 .hero-actions { gap: 12px; max-width: none; }
-.hero-actions .MuiButton-root { min-height: 44px; font-size: 13px; padding-inline: 16px; border-radius: 10px; }
+.hero-actions .ui-button { min-height: 44px; font-size: 13px; padding-inline: 16px; border-radius: 10px; }
 .connection-indicator { font-size: 12px; color: var(--ui-muted); }
 .connection-indicator > span { flex-shrink: 0; width: 7px; height: 7px; }
-.team-workspace section.MuiPaper-root { padding: 24px; border-radius: 20px; box-shadow: 0 4px 24px #19375204; }
-.team-workspace section.MuiPaper-root > header { padding-bottom: 16px; margin-bottom: 16px; }
-.team-workspace section.MuiPaper-root > header > h2 { font-size: 21px; }
+.team-workspace section.ui-card { padding: 24px; border-radius: 20px; box-shadow: 0 4px 24px #19375204; }
+.team-workspace section.ui-card > header { padding-bottom: 16px; margin-bottom: 16px; }
+.team-workspace section.ui-card > header > h2 { font-size: 21px; }
 .notes-overview { margin-bottom: 18px; }
 .notes-completion { text-align: left; font-size: 13px; color: var(--ui-muted); width: 100%; display: flex; align-items: center; gap: 20px; }
 .notes-completion .note-progress { flex: 1; max-width: 180px; height: 5px; margin: 0; }
 .roster-toolbar { gap: 16px; margin-bottom: 20px; }
 .roster-toolbar > div { max-width: 520px; }
-.roster-toolbar .MuiOutlinedInput-root { min-height: 48px; font-size: 15px; border-radius: 12px; }
-.roster-toolbar .MuiIconButton-root { min-width: 44px; min-height: 44px; }
+.roster-toolbar .ui-input { min-height: 48px; font-size: 15px; border-radius: 12px; }
+.roster-toolbar .ui-button { min-width: 44px; min-height: 44px; }
 .roster-count { font-size: 12px; color: var(--ui-muted); }
 .participant-card, html[data-density="comfortable"] .participant-card {
   display: grid; grid-template-columns: 44px minmax(0, 1fr) auto 44px;
@@ -111,12 +111,12 @@ body { background: var(--ui-canvas); }
   border-bottom: 1px solid var(--ui-border); border-radius: 12px;
 }
 .participant-avatar { grid-column: 1; grid-row: 1; padding-top: 2px; }
-.participant-avatar .MuiAvatar-root { width: 44px; height: 44px; border-radius: 14px; font-size: 14px; }
+.participant-avatar .ui-avatar { width: 44px; height: 44px; border-radius: 14px; font-size: 14px; }
 .participant-copy, .participant-card.is-expanded .participant-copy { grid-column: 2; grid-row: 1; min-width: 0; }
 .participant-name, html[data-density="comfortable"] .participant-name { font-size: 16px; line-height: 1.5; font-weight: 650; }
 .participant-status, html[data-density="comfortable"] .participant-status { font-size: 12px; line-height: 1.6; margin-top: 4px; gap: 7px; }
-.participant-action.MuiButton-root { grid-column: 3; grid-row: 1; min-height: 44px; font-size: 13px; padding-inline: 16px; border-radius: 10px; margin: 0; }
-.favorite-toggle.MuiIconButton-root { grid-column: 4; grid-row: 1; width: 44px; min-width: 44px; height: 44px; border-radius: 12px; }
+.participant-action.ui-button { grid-column: 3; grid-row: 1; min-height: 44px; font-size: 13px; padding-inline: 16px; border-radius: 10px; margin: 0; }
+.favorite-toggle.ui-button { grid-column: 4; grid-row: 1; width: 44px; min-width: 44px; height: 44px; border-radius: 12px; }
 .note-preview, html[data-density="comfortable"] .note-preview { margin-top: 10px; font-size: 14px; line-height: 1.7; }
 .note-section-preview, html[data-density="comfortable"] .note-section-preview { max-height: 52px; }
 .note-section-preview > div > span, html[data-density="comfortable"] .note-section-preview > div > span { font-size: 11px; }
@@ -130,10 +130,10 @@ body { background: var(--ui-canvas); }
 .workspace-notice { font-size: 12px; line-height: 1.7; }
 .portal-footer { max-width: 1200px; font-size: 12px; padding-block: 24px; }
 .team-workspace details > summary { min-height: 44px; font-size: 14px; }
-.team-workspace dl .MuiPaper-root { padding: 20px; border-radius: 14px; }
-.note-modal .MuiDialog-paper { border-radius: 22px; max-width: 1020px; }
+.team-workspace dl .ui-card { padding: 20px; border-radius: 14px; }
+.note-modal.ui-dialog { border-radius: 22px; max-width: 1020px; }
 .note-modal-header { padding: 20px 24px; }
-.note-modal-close.MuiIconButton-root { min-width: 44px; min-height: 44px; }
+.note-modal-close.ui-button { min-width: 44px; min-height: 44px; }
 .note-modal-eyebrow { display: none; }
 .note-modal-header h2 { font-size: 22px; margin: 0; }
 .note-modal-person p { font-size: 16px; }
@@ -147,8 +147,8 @@ body { background: var(--ui-canvas); }
 .note-format-help { font-size: 12px; line-height: 1.8; }
 .note-modal-tip { font-size: 12px; line-height: 1.7; }
 .note-modal-footer { padding: 16px 24px; }
-.note-modal-footer > .MuiButton-root { min-height: 48px; font-size: 14px; padding-inline: 20px; }
-.note-modal-tools .MuiButton-root { min-height: 44px; font-size: 13px; }
+.note-modal-footer > .ui-button { min-height: 48px; font-size: 14px; padding-inline: 20px; }
+.note-modal-tools .ui-button { min-height: 44px; font-size: 13px; }
 .home-page { gap: 32px; }
 .home-hero { padding: 48px; border-radius: 24px; gap: 40px; }
 .home-hero h1 { font-size: clamp(38px, 4.5vw, 60px); }
@@ -184,10 +184,10 @@ html[data-density="comfortable"] .note-preview { font-size: 15px; }
   .portal-appbar > div { column-gap: 8px; }
   .portal-appbar > div > a img { width: 88px; height: 32px; }
   .portal-appbar > div > div:last-child { gap: 4px; }
-  .portal-appbar > div > div:last-child > .MuiButtonBase-root { min-width: 44px; padding-inline: 8px; }
+  .portal-appbar > div > div:last-child > .ui-button { min-width: 44px; padding-inline: 8px; }
   .portal-appbar nav { padding: 4px; }
-  .portal-appbar nav .MuiButtonBase-root { min-height: 44px; }
-  .portal-appbar nav .MuiButtonBase-root > span:last-child { font-size: 11px; }
+  .portal-appbar nav .ui-button { min-height: 44px; }
+  .portal-appbar nav .ui-button > span:last-child { font-size: 11px; }
   .team-main { padding: 24px 12px 12px; }
   .team-workspace { gap: 20px; }
   .team-hero { flex-direction: column; align-items: stretch; gap: 16px; }
@@ -195,39 +195,39 @@ html[data-density="comfortable"] .note-preview { font-size: 15px; }
   .hero-meta { font-size: 12px; margin-top: 8px; gap: 10px; }
   .hero-actions { flex-direction: row; align-items: center; justify-content: space-between; max-width: none; margin: 0; }
   .hero-actions .connection-indicator { font-size: 12px; text-align: left; }
-  .hero-actions .MuiButton-root { min-width: 44px; min-height: 44px; font-size: 13px; padding-inline: 12px; }
-  .hero-actions .MuiButton-startIcon { margin-right: 8px; }
-  .team-workspace section.MuiPaper-root { padding: 16px; border-radius: 16px; }
-  .team-workspace section.MuiPaper-root > header > h2 { font-size: 20px; }
+  .hero-actions .ui-button { min-width: 44px; min-height: 44px; font-size: 13px; padding-inline: 12px; }
+  .hero-actions .ui-button-icon { margin-right: 8px; }
+  .team-workspace section.ui-card { padding: 16px; border-radius: 16px; }
+  .team-workspace section.ui-card > header > h2 { font-size: 20px; }
   .notes-completion { font-size: 12px; gap: 12px; }
   .roster-toolbar { flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
   .roster-toolbar > div { flex-basis: 100%; }
-  .roster-toolbar .MuiOutlinedInput-root { font-size: 16px; }
+  .roster-toolbar .ui-input { font-size: 16px; }
   .roster-count { font-size: 12px; }
   .participant-card, html[data-density="comfortable"] .participant-card {
     grid-template-columns: 36px minmax(0, 1fr) 44px; gap: 10px;
     padding: 20px 0; border-radius: 0;
   }
-  .participant-avatar .MuiAvatar-root { width: 36px; height: 36px; font-size: 12px; border-radius: 11px; }
-  .favorite-toggle.MuiIconButton-root { grid-column: 3; }
+  .participant-avatar .ui-avatar { width: 36px; height: 36px; font-size: 12px; border-radius: 11px; }
+  .favorite-toggle.ui-button { grid-column: 3; }
   .participant-name, html[data-density="comfortable"] .participant-name { font-size: 16px; }
   .participant-status, html[data-density="comfortable"] .participant-status { font-size: 12px; }
-  .participant-action.MuiButton-root { grid-column: 2 / -1; grid-row: 2; justify-self: start; font-size: 13px; min-height: 44px; padding-inline: 14px; }
-  .participant-action.MuiButton-root .MuiButton-startIcon { margin-right: 8px; }
+  .participant-action.ui-button { grid-column: 2 / -1; grid-row: 2; justify-self: start; font-size: 13px; min-height: 44px; padding-inline: 14px; }
+  .participant-action.ui-button .ui-button-icon { margin-right: 8px; }
   .expanded-note { grid-template-columns: minmax(0, 1fr); padding: 16px; gap: 20px; }
   .note-updated { font-size: 11px; line-height: 1.7; }
-  .note-modal .MuiDialog-paper { width: 100%; max-height: 100dvh; height: 100dvh; margin: 0; border-radius: 0; }
+  .note-modal.ui-dialog { width: 100%; max-height: 100dvh; height: 100dvh; margin: 0; border-radius: 0; }
   .note-modal-header { padding: 12px 16px; gap: 10px; }
   .note-modal-header h2 { font-size: 19px; }
   .note-modal-symbol { display: none; }
-  .note-modal-content.MuiDialogContent-root { padding: 20px 16px; }
+  .note-modal-content.ui-dialog-body { padding: 20px 16px; }
   .note-modal-person { flex-wrap: wrap; }
   .note-modal-count { font-size: 11px; }
   .note-modal-footer { flex-wrap: wrap; padding: 12px 16px max(12px, env(safe-area-inset-bottom)); gap: 8px; }
   .note-modal-tools { width: 100%; flex: auto; justify-content: space-between; }
-  .note-modal-tools .MuiButton-root { min-width: 44px; font-size: 12px; padding-inline: 8px; }
-  .note-modal-tools .MuiButton-startIcon { margin-right: 6px; }
-  .note-modal-footer > .MuiButton-root { width: 100%; font-size: 14px; min-height: 48px; }
+  .note-modal-tools .ui-button { min-width: 44px; font-size: 12px; padding-inline: 8px; }
+  .note-modal-tools .ui-button-icon { margin-right: 6px; }
+  .note-modal-footer > .ui-button { width: 100%; font-size: 14px; min-height: 48px; }
   .home-hero { padding: 28px 24px; border-radius: 20px; }
   .home-hero h1 { font-size: 40px; }
   .home-hero-description { font-size: 18px; }

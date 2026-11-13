@@ -14,7 +14,7 @@ body:has(> .welcome-overlay) > #portal-content { visibility: hidden; }
 .welcome-title-dot { color: #387f64; }
 .welcome-equalizer { display: flex; align-items: center; justify-content: center; gap: clamp(8px, 1.5vw, 20px); height: clamp(140px, 25vh, 240px); margin: 20px auto 28px; }
 .welcome-bar { display: flex; align-items: flex-start; justify-content: center; width: clamp(44px, 8vw, 104px); height: 85%; padding-top: 14px; border-radius: 60px; transform-origin: center; animation: welcome-groove 2.4s ease-in-out infinite; }
-.welcome-bar .MuiSvgIcon-root { width: 70%; height: auto; }
+.welcome-bar .lucide { width: 70%; height: auto; }
 .welcome-bar-0 { background: #ef9f76; height: 62%; animation-delay: -.4s; }
 .welcome-bar-1 { background: #d4d887; height: 82%; animation-delay: -.8s; }
 .welcome-bar-2 { background: #87b49c; height: 100%; animation-delay: -1.2s; }

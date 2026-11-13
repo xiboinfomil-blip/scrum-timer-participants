@@ -1,5 +1,5 @@
 import type { Hint, NoteInput, Notes, Person, PortalData, Round } from '../types/portal.ts';
-export const TOKEN_PATTERN = /^[A-Za-z0-9_-]{1,512}\.[A-Za-z0-9_-]{43}$/;
+export const TOKEN_PATTERN = /^[A-Za-z0-9_-]{1,468}\.[A-Za-z0-9_-]{43}$/;
 export const TEAM_PATTERN = /^[a-f0-9]{64}$/;
 const controls = /[\u0000-\u0009\u000b-\u001f\u007f-\u009f]/u;
 export const characterCount = (value: string) => [...value].length;
@@ -24,7 +24,7 @@ export function validateNote(value: unknown): NoteInput {
   const hint = v.hint.trim();
   if (!hint || characterCount(hint) > 600) throw new Error('La note doit contenir entre 1 et 600 caractères.');
   if (!validDay(v.day)) throw new Error('Date invalide.');
-  if (!Number.isInteger(v.revision) || (v.revision as number) < 0 || (v.revision as number) >= 2147483647) throw new Error('Révision invalide.');
+  if (!Number.isSafeInteger(v.revision) || (v.revision as number) < 0) throw new Error('Révision invalide.');
   return { participantId, hint, day: v.day, revision: v.revision as number };
 }
 function array(value: unknown, limit: number): unknown[] {

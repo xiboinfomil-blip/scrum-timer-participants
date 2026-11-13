@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { PortalIcon } from './portal-icon';
+import { Button } from './ui/button';
 
 // Only the explicit opt-out preference is persisted; never team data.
 export function WelcomeOverlay() {
@@ -42,7 +43,7 @@ export function WelcomeOverlay() {
     aria-labelledby="welcome-title" aria-describedby="welcome-description"
     className="welcome-overlay">
     <header className="welcome-top"><span className="welcome-brand">infomil<span> / </span>mauritius</span>
-      <button ref={skipRef} type="button" onClick={() => setOpen(false)} className="welcome-skip" aria-label="Fermer l’introduction">Passer l’intro <PortalIcon name="arrow" className="size-5" /></button>
+      <Button ref={skipRef} variant="ghost" onClick={() => setOpen(false)} className="welcome-skip" aria-label="Fermer l’introduction">Passer l’intro <PortalIcon name="arrow" className="size-5" /></Button>
     </header>
       <div className="welcome-content">
         <p className="welcome-eyebrow">CHAQUE HUMEUR A SA PLACE.</p>
@@ -52,7 +53,7 @@ export function WelcomeOverlay() {
         </div>
         <p id="welcome-description">Des humeurs différentes.<br /><strong>Une équipe qui avance ensemble.</strong></p>
       </div>
-      <footer className="welcome-bottom"><span>VOTRE ESPACE D’ÉQUIPE</span><button ref={neverRef} type="button" className="welcome-skip" onClick={() => { try { localStorage.setItem('scrum-participants-intro', 'hidden'); } catch { /* Session dismissal still works. */ } setOpen(false); }}>Ne plus afficher l’introduction</button></footer>
+      <footer className="welcome-bottom"><span>VOTRE ESPACE D’ÉQUIPE</span><Button ref={neverRef} variant="ghost" className="welcome-skip" onClick={() => { try { localStorage.setItem('scrum-participants-intro', 'hidden'); } catch { /* Session dismissal still works. */ } setOpen(false); }}>Ne plus afficher l’introduction</Button></footer>
       <div className="welcome-timeline" aria-hidden="true"><span /></div>
   </div>;
 }

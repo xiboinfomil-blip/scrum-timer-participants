@@ -5,6 +5,8 @@ import { EditorContent, useEditor, useEditorState } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Markdown } from '@tiptap/markdown';
 import { PortalIcon } from './portal-icon';
+import { Button } from './ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
 export type RichNoteEditorHandle = { focus: () => void };
 
@@ -86,7 +88,7 @@ export function RichNoteEditor({ ref, value, onChange, disabled, invalid, id = '
   ];
   return <div className={`rich-note-editor ${invalid ? 'is-invalid' : ''} ${disabled ? 'is-disabled' : ''}`}>
     <div className="rich-note-toolbar" role="group" aria-label="Mise en forme de la note">
-      {tools.map(tool => <button key={tool.label} type="button" aria-label={tool.label} title={tool.label} aria-pressed={tool.active} disabled={!editor || disabled || tool.unavailable} onMouseDown={event => event.preventDefault()} onClick={tool.run}>{tool.icon}</button>)}
+      {tools.map(tool => <Tooltip key={tool.label}><TooltipTrigger asChild><Button variant="ghost" size="icon" aria-label={tool.label} aria-pressed={tool.active} disabled={!editor || disabled || tool.unavailable} onMouseDown={event => event.preventDefault()} onClick={tool.run}>{tool.icon}</Button></TooltipTrigger><TooltipContent>{tool.label}</TooltipContent></Tooltip>)}
     </div>
     <EditorContent editor={editor} />
   </div>;

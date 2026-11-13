@@ -1,0 +1,46 @@
+@layer components {
+  :root { --ui-primary-text: #fff; }
+  html[data-theme="dark"] { --ui-primary-text: #102438; }
+  .ui-card { border: 1px solid var(--ui-border); border-radius: 12px; background: var(--ui-surface); color: var(--ui-text); }
+  .ui-button { border-radius: 10px; line-height: 1.5; font-weight: 650; letter-spacing: 0; white-space: normal; }
+  .ui-button-primary { border: 1px solid transparent; background: linear-gradient(125deg, #205f9d, #3278b8); color: var(--ui-primary-text); }
+  .ui-button-primary:hover:not(:disabled) { background: #164b80; }
+  .ui-button-outline { border: 1px solid var(--ui-border); background: var(--ui-surface); color: var(--ui-accent); }
+  .ui-button-outline:hover:not(:disabled), .ui-button-ghost:hover:not(:disabled) { background: var(--ui-soft); }
+  .ui-button-ghost { background: transparent; color: inherit; }
+  .ui-button-icon { display: inline-flex; flex-shrink: 0; }
+  .ui-input { border: 1px solid var(--ui-border); border-radius: 10px; background: var(--ui-surface); color: var(--ui-text); }
+  .ui-input::placeholder { color: var(--ui-muted); }
+  .ui-avatar { border-radius: 12px; background: var(--ui-soft); color: var(--ui-accent); }
+  .ui-alert { border-radius: 14px; }
+  .ui-alert-info { background: #edf4fb; color: #205f9d; border-color: #b9cfe1; }
+  .ui-alert-warning { background: #fff6e8; color: #875415; border-color: #edcf9f; }
+  .ui-alert-error { background: #fcefed; color: #a63e38; border-color: #ecc3bf; }
+  .ui-dialog-overlay { z-index: 100; background: #102c48a8; backdrop-filter: blur(4px); }
+  .ui-dialog { z-index: 101; max-width: 600px; max-height: calc(100dvh - 32px); border: 1px solid var(--ui-border); border-radius: 12px; background: var(--ui-surface); color: var(--ui-text); box-shadow: 0 32px 100px #071d3c40; }
+  .ui-dialog-body { flex: 1 1 auto; min-width: 0; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 20px 24px; }
+  .ui-dialog-title { line-height: 1.4; overflow-wrap: anywhere; }
+  .ui-menu { z-index: 110; max-height: var(--radix-dropdown-menu-content-available-height); border-color: var(--ui-border); background: var(--ui-surface); color: var(--ui-text); }
+  .ui-menu-item[data-highlighted], .ui-menu-item[data-state="checked"] { background: var(--ui-soft); color: var(--ui-accent); }
+  .ui-tooltip { z-index: 120; background: var(--ui-text); color: var(--ui-surface); }
+  .guide-modal { max-width: 900px; }
+  .note-modal-form { flex: 1 1 auto; }
+  .rich-note-toolbar .ui-button { width: auto; height: auto; padding: 4px; }
+  html[data-theme="dark"] .ui-button-primary { background: linear-gradient(125deg, #91c7ff, #b2dbff); }
+  html[data-theme="dark"] .ui-button-primary:hover:not(:disabled) { background: #c4e2ff; }
+  html[data-theme="dark"] .ui-alert-info { background: #213349; color: #c4e2ff; border-color: #3a5068; }
+  html[data-theme="dark"] .ui-alert-warning { background: #352d23; color: #f8d3a3; border-color: #725b3f; }
+  html[data-theme="dark"] .ui-alert-error { background: #422b2e; color: #ffaaa4; border-color: #7d4a4b; }
+  html[data-density="comfortable"] .ui-button { font-size: 15px; }
+  @media (max-width: 540px) {
+    .ui-dialog-header { padding-inline: 20px; }
+    .ui-dialog-footer { padding-inline: 20px; }
+  }
+}
+
+.note-modal.ui-dialog, .person-choice-modal.ui-dialog { margin: 0; }
+.rich-note-toolbar .ui-button { width: 36px; height: 44px; padding: 4px; }
+.person-choice-modal .ui-dialog-header { padding: 0; }
+.person-choice-modal .ui-dialog-title { padding-right: 28px; }
+.personal-note-person .ui-avatar { display: flex; }
+.personal-note-person .ui-avatar > span { margin: 0; color: inherit; font-size: inherit; }

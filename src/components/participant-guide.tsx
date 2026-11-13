@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Paper } from '@mui/material';
 import { PortalIcon } from './portal-icon';
 
 const sections = [
@@ -75,10 +74,10 @@ export function ParticipantGuide({ variant = 'dialog' }: { variant?: 'page' | 'd
       {sections.map((section, index) => <a key={section.id} href={`#guide-${section.id}`} aria-current={active === `guide-${section.id}` ? 'location' : undefined} onClick={() => setActive(`guide-${section.id}`)} className="guide-nav-link"><span aria-hidden="true" className="guide-nav-number">{String(index + 1).padStart(2, '0')}</span><span>{section.title}</span><PortalIcon name="arrow" className="guide-nav-arrow" /></a>)}
     </nav><div className="guide-sidebar-tip"><span className="help-fact-icon"><PortalIcon name="shield" className="size-5" /></span><p className="font-semibold text-ink">Partagé, pas personnel.</p><p>Le lien ouvre l’espace de toute l’équipe. Évitez les informations sensibles dans vos notes.</p></div></aside>
     <div className="guide-sections"><p className="guide-intro">Préparez vos idées et retrouvez les repères de votre daily. Ici, seules les notes sont modifiables ; les statistiques et le bilan se consultent en lecture seule.</p>
-    {sections.map((section, index) => <Paper key={section.id} component="section" id={`guide-${section.id}`} aria-labelledby={`guide-${section.id}-title`} className="guide-section">
+    {sections.map((section, index) => <section key={section.id} id={`guide-${section.id}`} aria-labelledby={`guide-${section.id}-title`} className="ui-card guide-section">
       <header className="guide-section-header"><span aria-hidden="true" className="guide-section-icon"><PortalIcon name={section.icon} className="size-5" /></span><div className="min-w-0 flex-1"><p className="guide-section-eyebrow">REPÈRE {String(index + 1).padStart(2, '0')}</p><h2 id={`guide-${section.id}-title`}>{section.title}</h2></div><span className="guide-section-number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span></header>
       <div className="guide-section-prose">{section.paragraphs.map(paragraph => <p key={paragraph}>{paragraph}</p>)}</div><div className="guide-takeaway"><PortalIcon name="check" className="size-4 shrink-0" /><p>{takeaways[index]}</p></div>
-    </Paper>)}
+    </section>)}
     </div>
   </div>;
 }

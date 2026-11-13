@@ -15,22 +15,25 @@
     "test": "node --experimental-strip-types --test tests/*.test.ts"
   },
   "dependencies": {
-    "@emotion/cache": "^11.14.0",
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.1",
-    "@mui/icons-material": "^7.3.8",
-    "@mui/material": "^9.5.0",
-    "@mui/material-nextjs": "^9.5.0",
+    "@radix-ui/react-avatar": "^1.1.10",
+    "@radix-ui/react-dialog": "^1.1.15",
+    "@radix-ui/react-dropdown-menu": "^2.1.16",
+    "@radix-ui/react-slot": "^1.2.3",
+    "@radix-ui/react-tooltip": "^1.2.8",
     "@tiptap/markdown": "3.29.2",
     "@tiptap/pm": "3.31.3",
     "@tiptap/react": "3.29.2",
     "@tiptap/starter-kit": "3.29.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.72.0",
     "next": "16.3.5",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1",
-    "server-only": "0.0.1"
+    "server-only": "0.0.1",
+    "tailwind-merge": "^3.7.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "4.3.3",
@@ -43,9 +46,6 @@
     "typescript": "^5.9.0"
   },
   "overrides": {
-    "@mui/icons-material": {
-      "@mui/material": "$@mui/material"
-    },
     "@tiptap/core": "3.31.3",
     "@tiptap/pm": "$@tiptap/pm",
     "@tiptap/extension-bubble-menu": "3.31.3",

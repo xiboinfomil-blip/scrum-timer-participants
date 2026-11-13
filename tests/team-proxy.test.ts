@@ -87,6 +87,30 @@ test('both handlers reject all query parameters, including destination and token
   assert.equal(calls.length, 0);
 });
 
+test('current master revisions above the old 32-bit limit survive GET and PUT unchanged', async () => {
+  for (const revision of [2147483647, 2147483648, Number.MAX_SAFE_INTEGER]) {
+    const updated = { ...notes, hints: [{ ...notes.hints[0], revision }] };
+    const { handler, calls } = harness((_url, init) => Response.json(init.method === 'PUT' ? updated : { ...portal, ...updated }));
+    const read = await handler.GET(request());
+    assert.equal(read.status, 200);
+    assert.equal((await read.json()).hints[0].revision, revision);
+    const write = await handler.PUT(request('PUT', { body: JSON.stringify({ ...note, revision }) }));
+    assert.equal(write.status, 200);
+    assert.equal((await write.json()).hints[0].revision, revision);
+    assert.equal(JSON.parse(calls[1].init.body as string).revision, revision);
+  }
+});
+
+test('signed-link shape is bounded by the current master total length of 512', async () => {
+  const { handler, calls } = harness();
+  const boundary = request();
+  boundary.headers.set('X-Team-Link', `${'a'.repeat(468)}.${'A'.repeat(43)}`);
+  assert.equal((await handler.GET(boundary)).status, 200);
+  boundary.headers.set('X-Team-Link', `${'a'.repeat(469)}.${'A'.repeat(43)}`);
+  await error(await handler.GET(boundary), 401, 'INVALID_LINK');
+  assert.equal(calls.length, 1);
+});
+
 test('PUT rejects missing, opaque, noncanonical, foreign origins and cross-site metadata', async () => {
   const { handler, calls } = harness();
   for (const [suppliedOrigin, site] of [
