@@ -26,6 +26,8 @@ Node **>=22.6** (nécessaire aux tests TypeScript natifs), npm et accès à un r
 
 Dans **ce dossier uniquement** : installer les dépendances avec `npm install`, puis exécuter `npm run lint`, `npm run typecheck`, `npm test` et `npm run build`. Conserver le lockfile généré dans ce dépôt. `npm run dev -- --port 3002` démarre le développement sans toucher aux serveurs du maître ; `npm run start -- --port 3002` sert un build terminé. Ne pas reconstruire sous un ancien serveur de production actif.
 
+Le lockfile versionné utilise les URL publiques `https://registry.npmjs.org/` pour les tarballs, avec leurs versions et empreintes d'intégrité verrouillées. Vercel ne peut pas résoudre le registre interne `repository.infomil.its.dnsi` : ne pas réintroduire ses URL dans le lockfile lors d'une installation locale. Cela ne change pas la configuration du registre, du proxy ou de TLS du poste.
+
 Scripts disponibles : `dev`, `build`, `start`, `lint`, `typecheck`, `test`. Aucun hook de génération/copie d’assets ni outil de migration.
 
 ### Environnement serveur uniquement
